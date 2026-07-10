@@ -4,6 +4,7 @@
 - Paper notebooks remain in use during the pilot.
 - The primary initial data-entry user is a staff operator.
 - The elderly manager initially uses the application mainly to view results.
+- Stage 1 is party management only; invoice and payment workflows remain disabled.
 - Reported and confirmed payments are separate states.
 - Invoice instructions may be assigned gradually.
 - No hard deletion of financial records.

@@ -1,7 +1,7 @@
 # Domain Model
 
 ## Party
-Represents a person or business involved in the settlement flow. A single entity may play several roles at once.
+Represents a person or business involved in the settlement flow. A single entity may play several roles at once. Stage 1 uses it as the first fully managed business object, with create/view/edit/search/filter/archive/restore support and duplicate warnings.
 
 ## Invoice
 Stores the customer, invoice date, optional reference, total amount, and lifecycle state. No line items are stored.

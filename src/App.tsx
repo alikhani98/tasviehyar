@@ -1,40 +1,71 @@
+import { useEffect, useState } from "react";
+import { PartyManagement } from "./features/party-management/PartyManagement";
+
 const entryPoints = [
-  "ثبت فاکتور",
-  "ثبت پرداخت",
-  "حساب اشخاص",
-  "مغایرت‌ها"
+  { label: "ثبت فاکتور", active: false },
+  { label: "ثبت پرداخت", active: false },
+  { label: "حساب اشخاص", active: true },
+  { label: "مغایرت‌ها", active: false }
 ] as const;
 
 export function App() {
+  const [showPartyManagement, setShowPartyManagement] = useState(true);
+
+  function scrollToPartyManagement() {
+    document.getElementById("party-management")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  }
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      scrollToPartyManagement();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
     <main className="app-shell" lang="fa" dir="rtl">
       <section className="hero-card" aria-labelledby="app-title">
-        <p className="eyebrow">پیش‌نمایش مرحله ۰</p>
+        <p className="eyebrow">مرحله ۱</p>
         <h1 id="app-title">تسویه‌یار</h1>
         <p className="hero-copy">
-          ابزار محلی و فارسی برای ثبت تسویه‌ها، پیگیری مغایرت‌ها و نگه‌داری تاریخچه مالی بدون وابستگی به سرویس بیرونی.
+          ابزار محلی و فارسی برای ثبت و مدیریت اشخاص، با ذخیره‌سازی آفلاین و تاریخچه قابل پیگیری.
         </p>
 
         <div className="status-banner" role="note" aria-label="notice">
-          این نسخه یک شِل توسعه است. فرم‌های اصلی، گزارش‌های کامل و جریان‌های عملیاتی هنوز در مراحل بعدی ساخته می‌شوند.
+          این نسخه فقط «حساب اشخاص» را فعال کرده است. سایر بخش‌ها هنوز در مراحل بعدی باقی مانده‌اند.
         </div>
       </section>
 
       <section className="entry-grid" aria-label="نقاط ورود">
-        {entryPoints.map((label) => (
-          <button key={label} type="button" className="entry-card" disabled>
-            <span className="entry-label">{label}</span>
-            <span className="entry-meta">فعلا آماده نیست</span>
+        {entryPoints.map((entry) => (
+          <button
+            key={entry.label}
+            type="button"
+            className={entry.active ? "entry-card entry-card-active" : "entry-card"}
+            disabled={!entry.active}
+            aria-current={entry.active && showPartyManagement ? "page" : undefined}
+            onClick={() => {
+              if (entry.active) {
+                setShowPartyManagement(true);
+                scrollToPartyManagement();
+              }
+            }}
+          >
+            <span className="entry-label">{entry.label}</span>
+            <span className="entry-meta">{entry.active ? "فعال" : "فعلا آماده نیست"}</span>
           </button>
         ))}
       </section>
 
+      {showPartyManagement ? <PartyManagement /> : null}
+
       <section className="principles-card" aria-label="یادداشت مرحله">
         <h2>یادداشت اجرا</h2>
         <ul>
-          <li>همه داده‌های مالی در دستگاه و داخل IndexedDB نگه‌داری می‌شوند.</li>
-          <li>مبالغ فقط به تومان صحیح و بدون ممیز ذخیره می‌شوند.</li>
-          <li>تعارض‌ها و مغایرت‌ها باید دیده شوند، نه پنهان.</li>
+          <li>داده‌های اشخاص در دستگاه و داخل IndexedDB نگه‌داری می‌شوند.</li>
+          <li>اشخاص می‌توانند چند نقش هم‌زمان داشته باشند.</li>
+          <li>مشابهت‌های احتمالی باید دیده شوند، نه پنهان.</li>
         </ul>
       </section>
     </main>

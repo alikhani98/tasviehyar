@@ -9,9 +9,10 @@
 - Documentation baseline
 
 ## Stage 1
-- Core forms for parties, invoices, instructions, and payments
-- Basic list and detail screens
-- Local persistence flows
+- Party management only
+- Create, view, edit, search, filter, archive, and restore parties
+- Duplicate warnings for names, aliases, and phone numbers
+- Atomic local persistence and audit events
 
 ## Stage 2
 - Reconciliation helpers

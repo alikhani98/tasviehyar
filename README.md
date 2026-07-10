@@ -11,6 +11,13 @@ This stage provides:
 - a simple Persian RTL shell
 - tests for the required settlement scenario
 
+## Stage 1
+This stage adds party management:
+- create, view, edit, search, filter, archive, and restore parties
+- multi-role party records
+- duplicate-name, alias, and phone warnings
+- atomic audit events for party changes
+
 ## Scripts
 - `npm run dev`
 - `npm run build`

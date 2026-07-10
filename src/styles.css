@@ -111,6 +111,11 @@ h1 {
   color: #1d2320;
 }
 
+.entry-card-active {
+  border-color: rgba(24, 69, 59, 0.3);
+  background: linear-gradient(180deg, rgba(24, 69, 59, 0.15), rgba(255, 255, 255, 0.82));
+}
+
 .entry-card:disabled {
   opacity: 0.92;
   cursor: not-allowed;
@@ -141,6 +146,238 @@ h1 {
   padding-inline-start: 1.2rem;
 }
 
+.party-management {
+  display: grid;
+  gap: 1rem;
+}
+
+.section-heading,
+.detail-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.summary-strip {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  color: #49655c;
+  font-weight: 700;
+}
+
+.summary-strip span,
+.notice,
+.warning-card,
+.detail-card,
+.party-panel,
+.party-row,
+.empty-state {
+  border: 1px solid rgba(24, 69, 59, 0.12);
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 1rem;
+}
+
+.notice {
+  padding: 0.9rem 1rem;
+}
+
+.notice-error {
+  background: rgba(181, 51, 51, 0.08);
+  border-color: rgba(181, 51, 51, 0.18);
+}
+
+.notice-success {
+  background: rgba(24, 69, 59, 0.08);
+}
+
+.party-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 1rem;
+}
+
+.party-panel,
+.detail-card {
+  padding: 1rem;
+}
+
+.party-form,
+.toolbar {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.toolbar-grid,
+.form-grid,
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 700;
+}
+
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  min-height: 3rem;
+  border: 1px solid rgba(24, 69, 59, 0.16);
+  border-radius: 0.9rem;
+  padding: 0.8rem 0.95rem;
+  background: #fff;
+  color: inherit;
+}
+
+.field textarea {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+.role-grid {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.role-option {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(24, 69, 59, 0.12);
+  background: rgba(255, 255, 255, 0.92);
+  font-weight: 600;
+}
+
+.warning-card {
+  padding: 0.9rem 1rem;
+  background: rgba(217, 181, 107, 0.12);
+}
+
+.warning-card ul,
+.party-list,
+.detail-grid,
+.detail-card p {
+  margin-bottom: 0;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.primary-button,
+.secondary-button,
+.tertiary-button {
+  min-height: 3rem;
+  border-radius: 0.95rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid transparent;
+  font-weight: 800;
+}
+
+.primary-button {
+  background: #18453b;
+  color: #fff;
+}
+
+.secondary-button {
+  background: rgba(24, 69, 59, 0.08);
+  color: #124136;
+  border-color: rgba(24, 69, 59, 0.16);
+}
+
+.tertiary-button {
+  background: transparent;
+  color: #124136;
+  border-color: rgba(24, 69, 59, 0.16);
+}
+
+.party-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.party-row {
+  width: 100%;
+  text-align: right;
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.85rem 0.95rem;
+}
+
+.party-row-selected {
+  border-color: rgba(24, 69, 59, 0.34);
+  background: rgba(24, 69, 59, 0.08);
+}
+
+.party-row-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.party-row-meta,
+.muted-copy,
+.detail-copy,
+.empty-state p,
+.detail-grid dd {
+  color: #567067;
+}
+
+.status-pill {
+  border-radius: 999px;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.status-active {
+  background: rgba(24, 69, 59, 0.1);
+  color: #124136;
+}
+
+.status-archived {
+  background: rgba(181, 51, 51, 0.1);
+  color: #8d3030;
+}
+
+.empty-state {
+  padding: 1rem;
+}
+
+.detail-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.detail-grid dt {
+  font-weight: 800;
+  color: #124136;
+}
+
+.detail-grid dd {
+  margin-inline-start: 0;
+}
+
+@media (max-width: 900px) {
+  .party-layout,
+  .toolbar-grid,
+  .form-grid,
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 700px) {
   .app-shell {
     padding: 0.75rem;
@@ -154,5 +391,12 @@ h1 {
   .principles-card,
   .entry-card {
     border-radius: 1rem;
+  }
+
+  .section-heading,
+  .detail-heading,
+  .party-row-top {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

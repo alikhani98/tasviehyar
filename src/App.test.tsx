@@ -7,10 +7,10 @@ describe("App shell", () => {
     render(<App />);
 
     expect(screen.getByRole("heading", { name: "تسویه‌یار" })).toBeInTheDocument();
-    expect(screen.getByText("این نسخه یک شِل توسعه است. فرم‌های اصلی، گزارش‌های کامل و جریان‌های عملیاتی هنوز در مراحل بعدی ساخته می‌شوند.")).toBeInTheDocument();
+    expect(screen.getByText("این نسخه فقط «حساب اشخاص» را فعال کرده است. سایر بخش‌ها هنوز در مراحل بعدی باقی مانده‌اند.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /ثبت فاکتور/ })).toBeDisabled();
     expect(screen.getByRole("button", { name: /ثبت پرداخت/ })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /حساب اشخاص/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "حساب اشخاص فعال" })).toBeEnabled();
     expect(screen.getByRole("button", { name: /مغایرت‌ها/ })).toBeDisabled();
   });
 });

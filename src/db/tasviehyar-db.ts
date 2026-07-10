@@ -20,11 +20,11 @@ export class TasviehYarDatabase extends Dexie {
   paymentVerifications!: Table<PaymentVerification, string>;
   auditEvents!: Table<AuditEvent, string>;
 
-  constructor() {
-    super("tasviehyar");
+  constructor(name = "tasviehyar") {
+    super(name);
 
-    this.version(1).stores({
-      parties: "id, displayName, active, updatedAt",
+    this.version(2).stores({
+      parties: "id, displayName, *aliases, phoneNumber, *roles, active, updatedAt",
       invoices: "id, customerPartyId, invoiceDate, lifecycleStatus, updatedAt",
       paymentInstructions: "id, invoiceId, recipientPartyId, lifecycleStatus, updatedAt",
       destinationAccounts: "id, ownerPartyId, active, updatedAt",

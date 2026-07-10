@@ -1,0 +1,158 @@
+:root {
+  color-scheme: light;
+  font-family: "Vazirmatn", "IRANSans", "Segoe UI", Tahoma, Arial, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+  color: #1d2320;
+  background:
+    radial-gradient(circle at top right, rgba(24, 69, 59, 0.16), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(217, 181, 107, 0.2), transparent 24%),
+    linear-gradient(180deg, #f4efe6 0%, #f8f5ee 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  width: min(100%, 72rem);
+  margin: 0 auto;
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.hero-card,
+.entry-card,
+.principles-card {
+  border: 1px solid rgba(24, 69, 59, 0.12);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 20px 60px rgba(47, 53, 46, 0.08);
+}
+
+.hero-card {
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: #49655c;
+}
+
+h1,
+h2,
+p,
+ul {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0.75rem;
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  line-height: 1.05;
+  color: #124136;
+}
+
+.hero-copy {
+  margin-bottom: 1rem;
+  font-size: 1.08rem;
+  max-width: 42rem;
+}
+
+.status-banner {
+  border-radius: 1rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(90deg, rgba(24, 69, 59, 0.08), rgba(217, 181, 107, 0.14));
+  border: 1px solid rgba(24, 69, 59, 0.12);
+  font-weight: 700;
+}
+
+.entry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.entry-card {
+  width: 100%;
+  min-height: 8rem;
+  border-radius: 1.25rem;
+  padding: 1rem;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  color: #1d2320;
+}
+
+.entry-card:disabled {
+  opacity: 0.92;
+  cursor: not-allowed;
+}
+
+.entry-label {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.entry-meta {
+  font-size: 0.98rem;
+  color: #567067;
+}
+
+.principles-card {
+  border-radius: 1.25rem;
+  padding: 1.1rem 1.2rem;
+}
+
+.principles-card h2 {
+  margin-bottom: 0.5rem;
+  color: #124136;
+}
+
+.principles-card ul {
+  margin-bottom: 0;
+  padding-inline-start: 1.2rem;
+}
+
+@media (max-width: 700px) {
+  .app-shell {
+    padding: 0.75rem;
+  }
+
+  .entry-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-card,
+  .principles-card,
+  .entry-card {
+    border-radius: 1rem;
+  }
+}

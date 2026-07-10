@@ -1,0 +1,22 @@
+# Financial Invariants
+
+- Money is stored as non-negative integer تومان values.
+- Money values must also be safe integers.
+- Floating-point arithmetic is not used for money.
+- Settlement states such as unpaid, partially paid, provisionally paid, fully settled, and overpaid are derived from records, not manually edited stored truth.
+- Invoice and payment-instruction settlement labels must always be recalculable from current records.
+- Confirmed payments affect confirmed and provisional balances.
+- Reported payments affect provisional balances only.
+- Rejected payments affect neither balance.
+- Disputed payments affect neither balance and require review or mismatch handling.
+- Cancelled or reversed payments are excluded from active balance calculations.
+- Confirmed allocations reduce confirmed invoice balance.
+- Provisional views may include reported payments, but must remain clearly labelled.
+- Instruction totals may be less than the invoice total.
+- Instruction totals above the invoice total must raise a mismatch or validation error.
+- Allocations cannot exceed payment amounts.
+- Allocations referencing instructions must stay inside the same invoice, match the invoice customer, match the recipient, and respect destination-account ownership.
+- Duplicate tracking references should produce warnings.
+- Overpayments must remain visible.
+- Financial history must remain auditable.
+- Hard deletion of financial records is prohibited.

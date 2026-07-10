@@ -7,9 +7,11 @@ describe("App shell", () => {
     render(<App />);
 
     expect(screen.getByRole("heading", { name: "تسویه‌یار" })).toBeInTheDocument();
-    expect(screen.getByText("این نسخه «ثبت فاکتور» و «حساب اشخاص» را فعال کرده است. دستورهای پرداخت داخل جزئیات هر فاکتور مدیریت می‌شوند.")).toBeInTheDocument();
+    expect(
+      screen.getByText("این نسخه «ثبت فاکتور»، «ثبت پرداخت»، و «حساب اشخاص» را فعال کرده است. دستورهای پرداخت داخل جزئیات هر فاکتور و پرداخت‌های واقعی در بخش جداگانه مدیریت می‌شوند.")
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "ثبت فاکتور فعال" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: /ثبت پرداخت/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "ثبت پرداخت فعال" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "حساب اشخاص فعال" })).toBeEnabled();
     expect(screen.getByRole("button", { name: /مغایرت‌ها/ })).toBeDisabled();
   });

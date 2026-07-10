@@ -13,13 +13,13 @@ Represents a direction for how some part of an invoice should be settled. Instru
 Stores a lightweight account reference for identification, without requiring full account numbers in the MVP.
 
 ## Payment
-Stores a payment amount, payer, recipient, date, method, lifecycle state, verification state, and optional tracking reference.
+Stores a payment amount, payer, recipient, date, method, lifecycle state, verification state, optional tracking reference, optional destination account, and notes. Verification stays separate from the payment record itself so status transitions can be audited.
 
 ## PaymentAllocation
-Connects a payment to an invoice and optionally to one instruction.
+Connects a payment to an invoice and optionally to one instruction, so one payment may be split across multiple targets when needed.
 
 ## PaymentVerification
-Stores the verification method and result for a payment.
+Stores the verification method and result for a payment as append-only history.
 
 ## AuditEvent
 Records creation, cancellation, reversal, status changes, and corrections so history is not silently overwritten.

@@ -31,7 +31,7 @@ describe("party management UI", () => {
 
     expect(screen.getByRole("button", { name: "ثبت فاکتور فعال" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "حساب اشخاص فعال" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "ثبت پرداخت فعلا آماده نیست" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "ثبت پرداخت فعال" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "مغایرت‌ها فعلا آماده نیست" })).toBeDisabled();
     expect(screen.getByRole("heading", { name: "ثبت فاکتور" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "حساب اشخاص" })).toBeInTheDocument();

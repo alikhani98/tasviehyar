@@ -41,6 +41,13 @@ This stage adds payment instructions inside invoice details:
 - active total and unassigned remainder derived from the invoice
 - duplicate warnings, atomic audit events, and read-only cancelled invoices
 
+## Stage 5
+This stage adds payment recording and verification:
+- create, view, edit, cancel, and reverse payments
+- payment allocations to invoices and instructions
+- append-only verification history and duplicate warnings
+- simple payment history inside invoice details
+
 ## Scripts
 - `npm run dev`
 - `npm run build`

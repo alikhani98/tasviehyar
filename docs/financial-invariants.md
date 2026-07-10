@@ -12,6 +12,9 @@
 - Cancelled or reversed payments are excluded from active balance calculations.
 - Confirmed allocations reduce confirmed invoice balance.
 - Provisional views may include reported payments, but must remain clearly labelled.
+- Payment allocations may be split across multiple invoices or instructions, but the total allocated amount may not exceed the payment amount.
+- Payment verification history must be append-only and explicit.
+- Cancelled and reversed payments cannot accept new allocations or verification transitions.
 - Instruction totals may be less than the invoice total.
 - Instruction totals above the invoice total must raise a mismatch or validation error.
 - Allocations cannot exceed payment amounts.

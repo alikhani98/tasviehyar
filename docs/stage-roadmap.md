@@ -31,3 +31,16 @@
 - Multiple instructions per invoice with active totals and unassigned remainder
 - Duplicate warnings, cancellation, restoration, and atomic audit events
 - Local-first instruction persistence and RTL mobile-first UI
+
+## Stage 5
+- Payment recording, allocation, and verification
+- Reported, confirmed, rejected, and disputed payment history
+- Payment allocations against invoices and instructions
+- Duplicate tracking-reference and probable duplicate-payment warnings
+- Local Dexie persistence, audit history, and RTL mobile-first UI
+
+## Stage 6
+- Settlement balances and reconciliation
+- Derived customer and recipient summaries
+- Mismatch review list and payment/invoice settlement visibility
+- Simple summary cards for the home and detail views

@@ -1,5 +1,5 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Party, Invoice } from "../../domain";
+import type { Payment, PaymentAllocation, Party, Invoice } from "../../domain";
 import {
   filterInvoices,
   findProbableInvoiceDraftWarnings,
@@ -12,11 +12,17 @@ import {
   type InvoiceListFilter,
   type InvoiceStatusFilter
 } from "../../domain/invoices";
+import {
+  formatPaymentLifecycleLabel,
+  formatPaymentMethodLabel,
+  formatPaymentVerificationStatusLabel
+} from "../../domain/payments";
 import { db } from "../../db/tasviehyar-db";
 import { createDestinationAccountRepository, type DestinationAccountRepository } from "../../services/destination-account-repository";
 import { createInvoiceRepository, type InvoiceRepository } from "../../services/invoice-repository";
 import { createPartyRepository, type PartyRepository } from "../../services/party-repository";
 import { createPaymentInstructionRepository, type PaymentInstructionRepository } from "../../services/payment-instruction-repository";
+import { createPaymentRepository, type PaymentRepository } from "../../services/payment-repository";
 import { PaymentInstructionManagement } from "./PaymentInstructionManagement";
 
 export interface InvoiceManagementProps {
@@ -24,6 +30,7 @@ export interface InvoiceManagementProps {
   partyRepository?: PartyRepository;
   destinationAccountRepository?: DestinationAccountRepository;
   paymentInstructionRepository?: PaymentInstructionRepository;
+  paymentRepository?: PaymentRepository;
   onRequestPartyManagement?: () => void;
 }
 
@@ -52,6 +59,7 @@ const defaultInvoiceRepository = createInvoiceRepository(db);
 const defaultPartyRepository = createPartyRepository(db);
 const defaultDestinationAccountRepository = createDestinationAccountRepository(db);
 const defaultPaymentInstructionRepository = createPaymentInstructionRepository(db);
+const defaultPaymentRepository = createPaymentRepository(db);
 
 function formStateFromInvoice(invoice: Invoice): InvoiceFormState {
   const draft = parseInvoiceDraftFromInvoice(invoice);
@@ -111,10 +119,13 @@ export function InvoiceManagement({
   partyRepository = defaultPartyRepository,
   destinationAccountRepository = defaultDestinationAccountRepository,
   paymentInstructionRepository = defaultPaymentInstructionRepository,
+  paymentRepository = defaultPaymentRepository,
   onRequestPartyManagement
 }: InvoiceManagementProps) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [parties, setParties] = useState<Party[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [paymentAllocations, setPaymentAllocations] = useState<PaymentAllocation[]>([]);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
   const [formState, setFormState] = useState<InvoiceFormState>(emptyFormState);
   const [filter, setFilter] = useState<InvoiceListFilter>(defaultFilter);
@@ -133,25 +144,42 @@ export function InvoiceManagement({
 
   const loadData = useCallback(
     async (nextSelectionId?: string | null) => {
-      const [partyRecords, invoiceRecords] = await Promise.all([partyRepository.listParties(), repository.listInvoices()]);
+      const [partyRecords, invoiceRecords, paymentRecords, allocationRecords] = await Promise.all([
+        partyRepository.listParties(),
+        repository.listInvoices(),
+        paymentRepository.listPayments(),
+        paymentRepository.listAllocations()
+      ]);
       if (!isMountedRef.current) {
         return;
       }
 
       setParties(partyRecords);
       setInvoices(invoiceRecords);
+      setPayments(paymentRecords);
+      setPaymentAllocations(allocationRecords);
       if (typeof nextSelectionId !== "undefined") {
         setSelectedInvoiceId(nextSelectionId);
       }
       setLoading(false);
     },
-    [partyRepository, repository]
+    [partyRepository, paymentRepository, repository]
   );
 
   useEffect(() => {
     setLoading(true);
     void loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    function handleDataChange() {
+      setLoading(true);
+      void loadData(selectedInvoiceId);
+    }
+
+    window.addEventListener("tasviehyar-data-updated", handleDataChange as EventListener);
+    return () => window.removeEventListener("tasviehyar-data-updated", handleDataChange as EventListener);
+  }, [loadData, selectedInvoiceId]);
 
   const selectedInvoice = useMemo(() => invoices.find((invoice) => invoice.id === selectedInvoiceId) ?? null, [invoices, selectedInvoiceId]);
   const selectedInvoiceCustomer = useMemo(
@@ -184,6 +212,17 @@ export function InvoiceManagement({
   }, [activeCustomers, selectedInvoiceCustomer]);
 
   const visibleInvoices = useMemo(() => filterInvoices(invoices, parties, filter), [filter, invoices, parties]);
+  const selectedInvoicePaymentAllocations = useMemo(
+    () => paymentAllocations.filter((allocation) => allocation.invoiceId === selectedInvoice?.id),
+    [paymentAllocations, selectedInvoice?.id]
+  );
+  const selectedInvoicePayments = useMemo(
+    () => {
+      const paymentIds = new Set(selectedInvoicePaymentAllocations.map((allocation) => allocation.paymentId));
+      return payments.filter((payment) => paymentIds.has(payment.id));
+    },
+    [payments, selectedInvoicePaymentAllocations]
+  );
   const draftCandidate = useMemo(() => buildDraftCandidate(formState), [formState]);
   const duplicateWarnings = useMemo(
     () => (draftCandidate ? findProbableInvoiceDraftWarnings(invoices, parties, draftCandidate, selectedInvoice?.id) : []),
@@ -577,6 +616,45 @@ export function InvoiceManagement({
               <dt>آخرین تغییر</dt>
               <dd>{selectedInvoice.updatedAt}</dd>
             </div>
+          </div>
+        </section>
+      )}
+
+      {selectedInvoice && (
+        <section className="summary-card" aria-label="تاریخچه پرداخت فاکتور">
+          <strong>تاریخچه پرداخت</strong>
+          <p className="detail-copy">پرداخت‌های مرتبط با این فاکتور از تخصیص‌های ثبت‌شده به‌دست می‌آیند.</p>
+          <div className="party-list">
+            {selectedInvoicePayments.length === 0 ? (
+              <p className="muted-copy">برای این فاکتور هنوز پرداختی ثبت نشده است.</p>
+            ) : (
+              selectedInvoicePayments.map((payment) => {
+                const payerName = parties.find((party) => party.id === payment.payerPartyId)?.displayName ?? payment.payerPartyId;
+                const recipientName = parties.find((party) => party.id === payment.recipientPartyId)?.displayName ?? payment.recipientPartyId;
+                const allocatedAmount = selectedInvoicePaymentAllocations
+                  .filter((allocation) => allocation.paymentId === payment.id)
+                  .reduce((sum, allocation) => sum + allocation.allocatedAmount, 0);
+                return (
+                  <div key={payment.id} className="party-row">
+                    <div className="party-row-top">
+                      <strong>
+                        {payerName} → {recipientName}
+                      </strong>
+                      <span className={payment.lifecycleStatus === "active" ? "status-pill status-active" : "status-pill status-archived"}>
+                        {formatPaymentLifecycleLabel(payment.lifecycleStatus)}
+                      </span>
+                    </div>
+                    <div className="party-row-meta">
+                      {formatPaymentVerificationStatusLabel(payment.verificationStatus)} · {formatPaymentMethodLabel(payment.paymentMethod)}
+                    </div>
+                    <div className="party-row-meta">
+                      تخصیص به این فاکتور: {allocatedAmount.toLocaleString("fa-IR")} از {payment.amount.toLocaleString("fa-IR")} تومان
+                    </div>
+                    <div className="party-row-meta">{payment.trackingReference ?? "پیگیری ثبت نشده"}</div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </section>
       )}

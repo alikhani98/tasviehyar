@@ -7,6 +7,7 @@ import { createPartyRepository } from "../../services/party-repository";
 import { createInvoiceRepository } from "../../services/invoice-repository";
 import { createDestinationAccountRepository } from "../../services/destination-account-repository";
 import { createPaymentInstructionRepository } from "../../services/payment-instruction-repository";
+import { createPaymentRepository } from "../../services/payment-repository";
 import { buildDestinationAccountRecord } from "../../domain/destination-accounts";
 
 function createRepositories() {
@@ -27,8 +28,12 @@ function createRepositories() {
     now: () => "2026-07-10T08:00:00.000Z",
     createId: () => crypto.randomUUID()
   });
+  const paymentRepository = createPaymentRepository(database, {
+    now: () => "2026-07-10T08:00:00.000Z",
+    createId: () => crypto.randomUUID()
+  });
 
-  return { database, partyRepository, invoiceRepository, destinationAccountRepository, paymentInstructionRepository };
+  return { database, partyRepository, invoiceRepository, destinationAccountRepository, paymentInstructionRepository, paymentRepository };
 }
 
 describe("invoice management UI", () => {
@@ -38,7 +43,7 @@ describe("invoice management UI", () => {
 
   it("creates and opens a Persian RTL invoice workflow", async () => {
     const user = userEvent.setup();
-    const { database, partyRepository, invoiceRepository } = createRepositories();
+    const { database, partyRepository, invoiceRepository, paymentRepository } = createRepositories();
 
     try {
       const party = await partyRepository.createParty({
@@ -50,7 +55,7 @@ describe("invoice management UI", () => {
         notes: undefined
       });
 
-      render(<InvoiceManagement partyRepository={partyRepository} repository={invoiceRepository} />);
+      render(<InvoiceManagement partyRepository={partyRepository} repository={invoiceRepository} paymentRepository={paymentRepository} />);
 
       await screen.findByRole("option", { name: "احمدی" });
       await user.selectOptions(screen.getByLabelText("مشتری"), party.id);
@@ -110,7 +115,7 @@ describe("invoice management UI", () => {
 
   it("creates, cancels, and restores payment instructions inside invoice details", async () => {
     const user = userEvent.setup();
-    const { database, partyRepository, invoiceRepository, destinationAccountRepository, paymentInstructionRepository } =
+    const { database, partyRepository, invoiceRepository, destinationAccountRepository, paymentInstructionRepository, paymentRepository } =
       createRepositories();
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
@@ -146,7 +151,7 @@ describe("invoice management UI", () => {
       );
       await database.destinationAccounts.put(account);
 
-      await invoiceRepository.createInvoice({
+      const invoice = await invoiceRepository.createInvoice({
         customerPartyId: customer.id,
         invoiceDate: "2026-07-10",
         totalAmount: 300_000_000,
@@ -154,12 +159,31 @@ describe("invoice management UI", () => {
         note: "فاکتور نمونه"
       });
 
+      await paymentRepository.createPayment(
+        {
+          payerPartyId: customer.id,
+          recipientPartyId: recipient.id,
+          destinationAccountId: account.id,
+          amount: 100_000_000,
+          paymentDate: "2026-07-10",
+          paymentMethod: "bank_transfer",
+          verificationStatus: "reported",
+          trackingReference: "trk-1",
+          note: "پرداخت نمونه"
+        },
+        {
+          invoiceId: invoice.id,
+          allocatedAmount: 100_000_000
+        }
+      );
+
       render(
         <InvoiceManagement
           partyRepository={partyRepository}
           repository={invoiceRepository}
           destinationAccountRepository={destinationAccountRepository}
           paymentInstructionRepository={paymentInstructionRepository}
+          paymentRepository={paymentRepository}
         />
       );
 
@@ -180,6 +204,9 @@ describe("invoice management UI", () => {
       await user.click(instructionRow);
       const instructionDetails = screen.getByRole("region", { name: "جزئیات دستور پرداخت" });
       expect(within(instructionDetails).getByRole("heading")).toBeInTheDocument();
+
+      expect(await screen.findByText("تاریخچه پرداخت")).toBeInTheDocument();
+      expect(screen.getByText(/تخصیص به این فاکتور/)).toBeInTheDocument();
 
       const instructionNoteField = within(instructionForm).getByLabelText("توضیحات");
       await user.click(screen.getByRole("button", { name: "لغو دستور" }));

@@ -20,3 +20,4 @@ Stage 3 adds a simple local-first invoice workflow that stores one total amount 
 - The list supports customer-name and reference search with active/cancelled filtering.
 - Cancelled invoices stay preserved and can be reviewed, but not normally edited.
 - The invoice details panel includes the instruction form, instruction list, and active-total summary.
+- The invoice details panel also shows a simple payment history based on recorded allocations.

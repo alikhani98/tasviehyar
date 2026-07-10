@@ -15,6 +15,9 @@
 - Stage 4 payment instructions stay attached to invoices and do not store a redundant payer.
 - Stage 4 instruction totals are derived from active records and must not exceed the invoice total.
 - Stage 4 cancellation and restoration preserve instruction history instead of deleting records.
+- Stage 5 records real payments separately from instructions so reported and confirmed states remain explicit.
+- Stage 5 payment verification history is append-only.
+- Stage 5 allocations can be split across invoices and instructions, but never exceed the payment amount.
 - No hard deletion of financial records.
 - All money is stored in integer تومان values.
 - No commit, push, or pull request is created without explicit instruction.

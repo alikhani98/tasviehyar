@@ -151,6 +151,11 @@ h1 {
   gap: 1rem;
 }
 
+.payment-management {
+  display: grid;
+  gap: 1rem;
+}
+
 .instruction-section {
   display: grid;
   gap: 1rem;
@@ -415,6 +420,12 @@ h1 {
   gap: 1rem;
 }
 
+.payment-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 1rem;
+}
+
 .identifier-detail {
   display: grid;
   gap: 0.65rem;
@@ -429,6 +440,7 @@ h1 {
 @media (max-width: 900px) {
   .party-layout,
   .invoice-layout,
+  .payment-layout,
   .instruction-section,
   .destination-account-layout,
   .toolbar-grid,

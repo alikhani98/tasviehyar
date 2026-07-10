@@ -18,6 +18,14 @@ This stage adds party management:
 - duplicate-name, alias, and phone warnings
 - atomic audit events for party changes
 
+## Stage 2
+This stage adds destination-account management inside each party:
+- create, view, edit, archive, and restore destination accounts
+- multiple accounts per party
+- identifier normalization and duplicate warnings
+- atomic audit events for account changes
+- masked identifiers with reveal/copy in the party details view
+
 ## Scripts
 - `npm run dev`
 - `npm run build`

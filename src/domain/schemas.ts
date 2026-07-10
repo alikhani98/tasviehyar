@@ -58,9 +58,11 @@ export const paymentInstructionSchema = z.object({
 export const destinationAccountSchema = z.object({
   id: z.string().min(1),
   ownerPartyId: z.string().min(1),
-  bankName: z.string().min(1).optional(),
   accountLabel: z.string().min(1),
-  finalDigits: z.string().min(1).max(8).optional(),
+  bankName: z.string().min(1).optional(),
+  cardNumber: z.string().regex(/^\d{16}$/).optional(),
+  iban: z.string().regex(/^IR\d{24}$/).optional(),
+  bankAccountNumber: z.string().regex(/^\d{5,24}$/).optional(),
   active: z.boolean(),
   createdAt: z.string().datetime({ offset: true }),
   updatedAt: z.string().datetime({ offset: true })

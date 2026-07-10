@@ -26,14 +26,14 @@ export function App() {
   return (
     <main className="app-shell" lang="fa" dir="rtl">
       <section className="hero-card" aria-labelledby="app-title">
-        <p className="eyebrow">مرحله ۱</p>
+        <p className="eyebrow">مرحله ۲</p>
         <h1 id="app-title">تسویه‌یار</h1>
         <p className="hero-copy">
-          ابزار محلی و فارسی برای ثبت و مدیریت اشخاص، با ذخیره‌سازی آفلاین و تاریخچه قابل پیگیری.
+          ابزار محلی و فارسی برای ثبت و مدیریت اشخاص و حساب‌های مقصد، با ذخیره‌سازی آفلاین و تاریخچه قابل پیگیری.
         </p>
 
         <div className="status-banner" role="note" aria-label="notice">
-          این نسخه فقط «حساب اشخاص» را فعال کرده است. سایر بخش‌ها هنوز در مراحل بعدی باقی مانده‌اند.
+          این نسخه فقط «حساب اشخاص» را فعال کرده است. حساب‌های مقصد داخل جزئیات هر طرف مدیریت می‌شوند.
         </div>
       </section>
 

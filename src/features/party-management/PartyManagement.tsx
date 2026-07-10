@@ -14,10 +14,16 @@ import {
   type PartyStatusFilter
 } from "../../domain/parties";
 import { db } from "../../db/tasviehyar-db";
+import {
+  createDestinationAccountRepository,
+  type DestinationAccountRepository
+} from "../../services/destination-account-repository";
 import { createPartyRepository, type PartyRepository } from "../../services/party-repository";
+import { DestinationAccountManagement } from "./DestinationAccountManagement";
 
 export interface PartyManagementProps {
   repository?: PartyRepository;
+  destinationAccountRepository?: DestinationAccountRepository;
 }
 
 const defaultFilter: PartyListFilter = {
@@ -45,6 +51,7 @@ const defaultFormState: PartyFormState = {
 };
 
 const defaultPartyRepository = createPartyRepository(db);
+const defaultDestinationAccountRepository = createDestinationAccountRepository(db);
 
 function splitAliases(value: string): string[] {
   return Array.from(
@@ -99,7 +106,10 @@ function formStateFromParty(party: Party): PartyFormState {
   };
 }
 
-export function PartyManagement({ repository = defaultPartyRepository }: PartyManagementProps) {
+export function PartyManagement({
+  repository = defaultPartyRepository,
+  destinationAccountRepository = defaultDestinationAccountRepository
+}: PartyManagementProps) {
   const [parties, setParties] = useState<Party[]>([]);
   const [selectedPartyId, setSelectedPartyId] = useState<string | null>(null);
   const [formState, setFormState] = useState<PartyFormState>(defaultFormState);
@@ -234,7 +244,7 @@ export function PartyManagement({ repository = defaultPartyRepository }: PartyMa
     <section id="party-management" className="party-management" aria-labelledby="party-management-title">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">مرحله ۱</p>
+          <p className="eyebrow">مرحله ۲</p>
           <h2 id="party-management-title">حساب اشخاص</h2>
         </div>
         <button type="button" className="tertiary-button" onClick={clearSelection}>
@@ -495,6 +505,14 @@ export function PartyManagement({ repository = defaultPartyRepository }: PartyMa
 
           {selectedParty.notes && <p className="detail-copy">{selectedParty.notes}</p>}
         </section>
+      )}
+
+      {selectedParty && (
+        <DestinationAccountManagement
+          party={selectedParty}
+          parties={parties}
+          repository={destinationAccountRepository}
+        />
       )}
     </section>
   );

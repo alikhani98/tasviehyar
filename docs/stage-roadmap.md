@@ -15,10 +15,12 @@
 - Atomic local persistence and audit events
 
 ## Stage 2
-- Reconciliation helpers
-- Better audit review
-- Search and filtering
+- Destination-account management inside party details
+- Identifier normalization, duplicate warnings, and archive/restore
+- Local Dexie persistence with atomic audit events
+- Search and filtering within account lists
 
 ## Stage 3
+- Reconciliation helpers
 - Import and export workflows if needed
 - Usability refinements from pilot feedback

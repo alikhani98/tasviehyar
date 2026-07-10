@@ -188,6 +188,11 @@ h1 {
   border-color: rgba(181, 51, 51, 0.18);
 }
 
+.notice-warning {
+  background: rgba(217, 181, 107, 0.18);
+  border-color: rgba(217, 181, 107, 0.42);
+}
+
 .notice-success {
   background: rgba(24, 69, 59, 0.08);
 }
@@ -259,6 +264,11 @@ h1 {
 .warning-card {
   padding: 0.9rem 1rem;
   background: rgba(217, 181, 107, 0.12);
+}
+
+.warning-card-strong {
+  border-color: rgba(140, 86, 18, 0.26);
+  background: rgba(217, 181, 107, 0.18);
 }
 
 .warning-card ul,
@@ -369,8 +379,31 @@ h1 {
   margin-inline-start: 0;
 }
 
+.destination-account-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.destination-account-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 1rem;
+}
+
+.identifier-detail {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.identifier-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 @media (max-width: 900px) {
   .party-layout,
+  .destination-account-layout,
   .toolbar-grid,
   .form-grid,
   .detail-grid {

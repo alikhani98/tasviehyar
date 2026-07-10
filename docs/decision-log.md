@@ -12,6 +12,9 @@
 - Stage 3 uses cancellation instead of hard deletion for invoices.
 - Stage 3 duplicate invoice detection is warning-based rather than blocking.
 - Stage 3 does not store payment or balance state yet.
+- Stage 4 payment instructions stay attached to invoices and do not store a redundant payer.
+- Stage 4 instruction totals are derived from active records and must not exceed the invoice total.
+- Stage 4 cancellation and restoration preserve instruction history instead of deleting records.
 - No hard deletion of financial records.
 - All money is stored in integer تومان values.
 - No commit, push, or pull request is created without explicit instruction.

@@ -6,3 +6,4 @@ export * from "./validation";
 export * from "./parties";
 export * from "./destination-accounts";
 export * from "./invoices";
+export * from "./payment-instructions";

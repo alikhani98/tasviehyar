@@ -151,6 +151,11 @@ h1 {
   gap: 1rem;
 }
 
+.instruction-section {
+  display: grid;
+  gap: 1rem;
+}
+
 .invoice-management {
   display: grid;
   gap: 1rem;
@@ -424,6 +429,7 @@ h1 {
 @media (max-width: 900px) {
   .party-layout,
   .invoice-layout,
+  .instruction-section,
   .destination-account-layout,
   .toolbar-grid,
   .form-grid,

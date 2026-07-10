@@ -7,7 +7,7 @@ Represents a person or business involved in the settlement flow. A single entity
 Stores exactly one customer, one invoice date, an optional reference, one total amount, and an active/cancelled lifecycle state. No line items are stored, and settlement state is not stored in Stage 3.
 
 ## PaymentInstruction
-Represents a direction for how some part of an invoice should be settled. Instructions may be assigned gradually. The invoice customer is the single source of truth for who the payer is, so the instruction does not redundantly store a payer field.
+Represents a direction for how some part of an invoice should be settled. Instructions may be assigned gradually. The invoice customer is the single source of truth for who the payer is, so the instruction does not redundantly store a payer field. Stage 4 manages active, cancelled, and restored instructions inside invoice details.
 
 ## DestinationAccount
 Stores a lightweight account reference for identification, without requiring full account numbers in the MVP.

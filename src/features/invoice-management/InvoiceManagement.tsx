@@ -13,12 +13,17 @@ import {
   type InvoiceStatusFilter
 } from "../../domain/invoices";
 import { db } from "../../db/tasviehyar-db";
+import { createDestinationAccountRepository, type DestinationAccountRepository } from "../../services/destination-account-repository";
 import { createInvoiceRepository, type InvoiceRepository } from "../../services/invoice-repository";
 import { createPartyRepository, type PartyRepository } from "../../services/party-repository";
+import { createPaymentInstructionRepository, type PaymentInstructionRepository } from "../../services/payment-instruction-repository";
+import { PaymentInstructionManagement } from "./PaymentInstructionManagement";
 
 export interface InvoiceManagementProps {
   repository?: InvoiceRepository;
   partyRepository?: PartyRepository;
+  destinationAccountRepository?: DestinationAccountRepository;
+  paymentInstructionRepository?: PaymentInstructionRepository;
   onRequestPartyManagement?: () => void;
 }
 
@@ -45,6 +50,8 @@ const defaultFilter: InvoiceListFilter = {
 
 const defaultInvoiceRepository = createInvoiceRepository(db);
 const defaultPartyRepository = createPartyRepository(db);
+const defaultDestinationAccountRepository = createDestinationAccountRepository(db);
+const defaultPaymentInstructionRepository = createPaymentInstructionRepository(db);
 
 function formStateFromInvoice(invoice: Invoice): InvoiceFormState {
   const draft = parseInvoiceDraftFromInvoice(invoice);
@@ -102,6 +109,8 @@ function getActiveCustomerParties(parties: readonly Party[]): Party[] {
 export function InvoiceManagement({
   repository = defaultInvoiceRepository,
   partyRepository = defaultPartyRepository,
+  destinationAccountRepository = defaultDestinationAccountRepository,
+  paymentInstructionRepository = defaultPaymentInstructionRepository,
   onRequestPartyManagement
 }: InvoiceManagementProps) {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -300,7 +309,7 @@ export function InvoiceManagement({
     <section id="invoice-management" className="invoice-management" aria-labelledby="invoice-management-title">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">مرحله ۳</p>
+          <p className="eyebrow">مرحله ۴</p>
           <h2 id="invoice-management-title">ثبت فاکتور</h2>
         </div>
         <button type="button" className="tertiary-button" onClick={startNewInvoice}>
@@ -570,6 +579,15 @@ export function InvoiceManagement({
             </div>
           </div>
         </section>
+      )}
+
+      {selectedInvoice && (
+        <PaymentInstructionManagement
+          invoice={selectedInvoice}
+          parties={parties}
+          repository={paymentInstructionRepository}
+          destinationAccountRepository={destinationAccountRepository}
+        />
       )}
     </section>
   );

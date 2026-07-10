@@ -34,6 +34,13 @@ This stage adds invoice management:
 - customer selection limited to active customer-role parties for new invoices
 - warning-based duplicate detection and atomic audit events
 
+## Stage 4
+This stage adds payment instructions inside invoice details:
+- create, view, edit, cancel, and restore instructions
+- multiple instructions per invoice
+- active total and unassigned remainder derived from the invoice
+- duplicate warnings, atomic audit events, and read-only cancelled invoices
+
 ## Scripts
 - `npm run dev`
 - `npm run build`

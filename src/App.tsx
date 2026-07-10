@@ -31,14 +31,14 @@ export function App() {
   return (
     <main className="app-shell" lang="fa" dir="rtl">
       <section className="hero-card" aria-labelledby="app-title">
-        <p className="eyebrow">مرحله ۳</p>
+        <p className="eyebrow">مرحله ۴</p>
         <h1 id="app-title">تسویه‌یار</h1>
         <p className="hero-copy">
-          ابزار محلی و فارسی برای ثبت اشخاص، حساب‌های مقصد، و فاکتورهای تک‌مبلغی، با ذخیره‌سازی آفلاین و تاریخچه قابل پیگیری.
+          ابزار محلی و فارسی برای ثبت اشخاص، حساب‌های مقصد، فاکتورهای تک‌مبلغی، و دستورهای پرداختِ هر فاکتور، با ذخیره‌سازی آفلاین و تاریخچه قابل پیگیری.
         </p>
 
         <div className="status-banner" role="note" aria-label="notice">
-          این نسخه «ثبت فاکتور» و «حساب اشخاص» را فعال کرده است. حساب‌های مقصد داخل جزئیات هر طرف مدیریت می‌شوند.
+          این نسخه «ثبت فاکتور» و «حساب اشخاص» را فعال کرده است. دستورهای پرداخت داخل جزئیات هر فاکتور مدیریت می‌شوند.
         </div>
       </section>
 

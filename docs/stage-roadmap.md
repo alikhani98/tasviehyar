@@ -25,3 +25,9 @@
 - One total per invoice, active/cancelled lifecycle, and warning-based duplicates
 - Search, filter, edit, and cancellation flows
 - Usability refinements from pilot feedback
+
+## Stage 4
+- Payment-instruction management inside invoice details
+- Multiple instructions per invoice with active totals and unassigned remainder
+- Duplicate warnings, cancellation, restoration, and atomic audit events
+- Local-first instruction persistence and RTL mobile-first UI

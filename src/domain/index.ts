@@ -5,3 +5,4 @@ export * from "./audit";
 export * from "./validation";
 export * from "./parties";
 export * from "./destination-accounts";
+export * from "./invoices";

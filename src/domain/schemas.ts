@@ -24,7 +24,15 @@ export const partySchema = z.object({
   updatedAt: z.string().datetime({ offset: true })
 });
 
-export const invoiceLifecycleValues = ["draft", "open", "partially_settled", "settled", "cancelled", "reversed"] as const;
+export const invoiceLifecycleValues = [
+  "active",
+  "cancelled",
+  "draft",
+  "open",
+  "partially_settled",
+  "settled",
+  "reversed"
+] as const;
 export const invoiceLifecycleSchema = z.enum(invoiceLifecycleValues);
 
 export const invoiceSchema = z.object({

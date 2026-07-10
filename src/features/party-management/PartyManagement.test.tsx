@@ -26,13 +26,14 @@ describe("party management UI", () => {
     cleanup();
   });
 
-  it("keeps only the party entry point enabled in the shell", () => {
+  it("keeps the invoice and party entry points enabled in the shell", () => {
     render(<App />);
 
+    expect(screen.getByRole("button", { name: "ثبت فاکتور فعال" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "حساب اشخاص فعال" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "ثبت فاکتور فعلا آماده نیست" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "ثبت پرداخت فعلا آماده نیست" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "مغایرت‌ها فعلا آماده نیست" })).toBeDisabled();
+    expect(screen.getByRole("heading", { name: "ثبت فاکتور" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "حساب اشخاص" })).toBeInTheDocument();
   });
 

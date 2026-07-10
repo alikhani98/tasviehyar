@@ -1,18 +1,23 @@
 import { useEffect, useState } from "react";
+import { InvoiceManagement } from "./features/invoice-management/InvoiceManagement";
 import { PartyManagement } from "./features/party-management/PartyManagement";
 
 const entryPoints = [
-  { label: "ثبت فاکتور", active: false },
+  { label: "ثبت فاکتور", active: true },
   { label: "ثبت پرداخت", active: false },
   { label: "حساب اشخاص", active: true },
   { label: "مغایرت‌ها", active: false }
 ] as const;
 
 export function App() {
-  const [showPartyManagement, setShowPartyManagement] = useState(true);
+  const [currentSection, setCurrentSection] = useState<"parties" | "invoices">("parties");
 
   function scrollToPartyManagement() {
     document.getElementById("party-management")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  }
+
+  function scrollToInvoiceManagement() {
+    document.getElementById("invoice-management")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
   }
 
   useEffect(() => {
@@ -26,14 +31,14 @@ export function App() {
   return (
     <main className="app-shell" lang="fa" dir="rtl">
       <section className="hero-card" aria-labelledby="app-title">
-        <p className="eyebrow">مرحله ۲</p>
+        <p className="eyebrow">مرحله ۳</p>
         <h1 id="app-title">تسویه‌یار</h1>
         <p className="hero-copy">
-          ابزار محلی و فارسی برای ثبت و مدیریت اشخاص و حساب‌های مقصد، با ذخیره‌سازی آفلاین و تاریخچه قابل پیگیری.
+          ابزار محلی و فارسی برای ثبت اشخاص، حساب‌های مقصد، و فاکتورهای تک‌مبلغی، با ذخیره‌سازی آفلاین و تاریخچه قابل پیگیری.
         </p>
 
         <div className="status-banner" role="note" aria-label="notice">
-          این نسخه فقط «حساب اشخاص» را فعال کرده است. حساب‌های مقصد داخل جزئیات هر طرف مدیریت می‌شوند.
+          این نسخه «ثبت فاکتور» و «حساب اشخاص» را فعال کرده است. حساب‌های مقصد داخل جزئیات هر طرف مدیریت می‌شوند.
         </div>
       </section>
 
@@ -44,11 +49,21 @@ export function App() {
             type="button"
             className={entry.active ? "entry-card entry-card-active" : "entry-card"}
             disabled={!entry.active}
-            aria-current={entry.active && showPartyManagement ? "page" : undefined}
+            aria-current={
+              entry.active &&
+              ((entry.label === "حساب اشخاص" && currentSection === "parties") || (entry.label === "ثبت فاکتور" && currentSection === "invoices"))
+                ? "page"
+                : undefined
+            }
             onClick={() => {
               if (entry.active) {
-                setShowPartyManagement(true);
-                scrollToPartyManagement();
+                if (entry.label === "ثبت فاکتور") {
+                  setCurrentSection("invoices");
+                  scrollToInvoiceManagement();
+                } else if (entry.label === "حساب اشخاص") {
+                  setCurrentSection("parties");
+                  scrollToPartyManagement();
+                }
               }
             }}
           >
@@ -58,8 +73,6 @@ export function App() {
         ))}
       </section>
 
-      {showPartyManagement ? <PartyManagement /> : null}
-
       <section className="principles-card" aria-label="یادداشت مرحله">
         <h2>یادداشت اجرا</h2>
         <ul>
@@ -68,6 +81,13 @@ export function App() {
           <li>مشابهت‌های احتمالی باید دیده شوند، نه پنهان.</li>
         </ul>
       </section>
+
+      <InvoiceManagement onRequestPartyManagement={() => {
+        setCurrentSection("parties");
+        scrollToPartyManagement();
+      }} />
+
+      <PartyManagement />
     </main>
   );
 }

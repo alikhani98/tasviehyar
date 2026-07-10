@@ -26,6 +26,14 @@ This stage adds destination-account management inside each party:
 - atomic audit events for account changes
 - masked identifiers with reveal/copy in the party details view
 
+## Stage 3
+This stage adds invoice management:
+- create, view, edit, search, filter, and cancel invoices
+- one total amount per invoice
+- one invoice per customer
+- customer selection limited to active customer-role parties for new invoices
+- warning-based duplicate detection and atomic audit events
+
 ## Scripts
 - `npm run dev`
 - `npm run build`

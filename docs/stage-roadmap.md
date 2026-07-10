@@ -21,6 +21,7 @@
 - Search and filtering within account lists
 
 ## Stage 3
-- Reconciliation helpers
-- Import and export workflows if needed
+- Invoice management
+- One total per invoice, active/cancelled lifecycle, and warning-based duplicates
+- Search, filter, edit, and cancellation flows
 - Usability refinements from pilot feedback

@@ -151,6 +151,11 @@ h1 {
   gap: 1rem;
 }
 
+.invoice-management {
+  display: grid;
+  gap: 1rem;
+}
+
 .section-heading,
 .detail-heading {
   display: flex;
@@ -264,6 +269,15 @@ h1 {
 .warning-card {
   padding: 0.9rem 1rem;
   background: rgba(217, 181, 107, 0.12);
+}
+
+.summary-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.95rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(24, 69, 59, 0.12);
+  background: rgba(255, 255, 255, 0.84);
 }
 
 .warning-card-strong {
@@ -390,6 +404,12 @@ h1 {
   gap: 1rem;
 }
 
+.invoice-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 1rem;
+}
+
 .identifier-detail {
   display: grid;
   gap: 0.65rem;
@@ -403,6 +423,7 @@ h1 {
 
 @media (max-width: 900px) {
   .party-layout,
+  .invoice-layout,
   .destination-account-layout,
   .toolbar-grid,
   .form-grid,

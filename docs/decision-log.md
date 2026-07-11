@@ -24,6 +24,9 @@
 - Stage 7 backups are local files and restore replaces the current local database.
 - Stage 7 restore validation happens before any destructive write.
 - Stage 7 backup history metadata is local-only and helps pilots recover safely.
+- Stage 9 reports are read-only derivations of existing records and do not create stored summary tables.
+- Stage 9 Excel exports are reports, not backups, and cannot be restored into TasviehYar.
+- Stage 9 exported files contain sensitive financial information, while bank identifiers are masked by default in the UI.
 - No hard deletion of financial records.
 - All money is stored in integer تومان values.
 - No commit, push, or pull request is created without explicit instruction.

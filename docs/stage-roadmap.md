@@ -58,3 +58,10 @@
 - Installable shell, offline loading, and local-data access
 - Money/date preview improvements and safer destructive-action flows
 - Pilot readiness panel, manual smoke test, and end-to-end workflow verification
+
+## Stage 9
+- Operational reports and Excel export
+- Read-only summaries for customers, recipients, invoices, payments, reconciliation, and party statements
+- Date, party, lifecycle, and mismatch filters with printable views
+- Local Excel export with CSV fallback for the active report
+- Completed in the `stage-9-reports-excel-export` branch

@@ -32,7 +32,7 @@ describe("party management UI", () => {
     expect(screen.getByRole("button", { name: "ثبت فاکتور باز کردن بخش" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "جست‌وجوی شخص باز کردن بخش" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "ثبت پرداخت باز کردن بخش" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "مغایرت‌ها فعال" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "گزارش‌ها باز کردن بخش" })).toBeEnabled();
     expect(screen.getByRole("heading", { name: "ثبت فاکتور" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "حساب اشخاص" })).toBeInTheDocument();
   });

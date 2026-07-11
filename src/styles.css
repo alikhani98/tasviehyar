@@ -561,6 +561,76 @@ h1 {
   gap: 1rem;
 }
 
+.reports-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.report-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.75rem;
+}
+
+.report-filters {
+  display: grid;
+  gap: 1rem;
+}
+
+.report-table-wrap {
+  display: grid;
+  gap: 0.85rem;
+  overflow: hidden;
+}
+
+.report-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.report-subsection {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.84);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 16px 38px rgba(47, 53, 46, 0.05);
+}
+
+.report-table th,
+.report-table td {
+  padding: 0.8rem 0.9rem;
+  text-align: right;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(24, 69, 59, 0.1);
+}
+
+.report-table th {
+  background: rgba(24, 69, 59, 0.08);
+  color: #124136;
+  font-weight: 800;
+}
+
+.report-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.report-table tbody tr:nth-child(even) {
+  background: rgba(24, 69, 59, 0.03);
+}
+
+.report-table caption {
+  text-align: right;
+  padding: 0.2rem 0 0.75rem;
+  font-weight: 700;
+  color: #49655c;
+}
+
 .backup-file-input {
   position: absolute;
   width: 1px;
@@ -596,6 +666,34 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .app-navigation,
+  .form-actions,
+  .entry-grid,
+  .home-action-grid,
+  .home-panel > :not(.reports-panel) {
+    display: none !important;
+  }
+
+  .hero-card,
+  .entry-card,
+  .principles-card,
+  .summary-card,
+  .detail-card,
+  .notice,
+  .report-table {
+    box-shadow: none;
+  }
+
+  .reports-panel {
+    break-inside: avoid;
+  }
 }
 
 @media (max-width: 900px) {

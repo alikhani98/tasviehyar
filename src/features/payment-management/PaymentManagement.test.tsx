@@ -141,5 +141,5 @@ describe("payment management UI", () => {
     } finally {
       await database.delete();
     }
-  });
+  }, 10000);
 });

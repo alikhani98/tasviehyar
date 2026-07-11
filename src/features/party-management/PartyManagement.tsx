@@ -593,6 +593,44 @@ export function PartyManagement({
 
           {selectedParty.notes && <p className="detail-copy">{selectedParty.notes}</p>}
 
+          <div className="summary-card" aria-label="گردش حساب">
+            <strong>گردش حساب</strong>
+            <p className="detail-copy">نمایش فقط خواندنی از فاکتورها، پرداخت‌ها و مانده‌های مشتق‌شده برای این شخص.</p>
+            <dl className="detail-grid">
+              <div>
+                <dt>خلاصه مشتری</dt>
+                <dd>
+                  {selectedCustomerSummary
+                    ? `${selectedCustomerSummary.invoiceCount.toLocaleString("fa-IR")} فاکتور · ${formatInvoiceAmount(selectedCustomerSummary.confirmedOutstanding)} مانده قطعی`
+                    : "موردی ثبت نشده"}
+                </dd>
+              </div>
+              <div>
+                <dt>خلاصه گیرنده</dt>
+                <dd>
+                  {selectedRecipientSummary
+                    ? `${selectedRecipientSummary.instructionCount.toLocaleString("fa-IR")} دستور · ${formatInvoiceAmount(selectedRecipientSummary.confirmedRemaining)} مانده قطعی`
+                    : "موردی ثبت نشده"}
+                </dd>
+              </div>
+            </dl>
+            <div className="form-actions">
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() =>
+                  window.dispatchEvent(
+                    new CustomEvent("tasviehyar-open-record", {
+                      detail: { section: "reports", recordId: selectedParty.id }
+                    })
+                  )
+                }
+              >
+                مشاهده در گزارش‌ها
+              </button>
+            </div>
+          </div>
+
           {selectedCustomerSummary && selectedCustomerSummary.invoiceCount > 0 && (
             <div className="summary-card" aria-label="خلاصه مشتری">
               <strong>خلاصه مشتری</strong>

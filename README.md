@@ -68,6 +68,14 @@ This stage prepares the app for controlled pilot use:
 - clearer money and date previews, plus protection for unsafe actions and unsaved changes
 - backup/pilot reminders and end-to-end workflow verification
 
+## Stage 9
+This stage adds operational reporting:
+- customer, recipient, invoice, payment, reconciliation, and party-statement summaries
+- date, party, lifecycle, and mismatch filtering
+- printable report views with Excel export and CSV fallback
+- read-only reporting that derives from existing local records
+- Stage 9 is complete in this branch and the Excel files are reports, not backups
+
 ## Scripts
 - `npm run dev`
 - `npm run build`

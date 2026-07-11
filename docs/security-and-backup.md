@@ -12,3 +12,6 @@
 - Restore should be transactional and leave the existing database unchanged if validation or writes fail.
 - The installable shell should not cache exported backup files.
 - Browser storage helps local persistence, but paper records remain part of the pilot safety plan.
+- Excel and CSV report exports are not backups and cannot be used to restore TasviehYar.
+- Report exports contain sensitive financial information and should be handled like other confidential business records.
+- Banking identifiers should be masked by default in list views, with reveal and copy reserved for focused details.

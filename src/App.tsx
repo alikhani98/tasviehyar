@@ -4,6 +4,7 @@ import { BackupRestore } from "./features/backup-restore/BackupRestore";
 import { PilotReadinessPanel } from "./features/pilot-readiness/PilotReadinessPanel";
 import { PaymentManagement } from "./features/payment-management/PaymentManagement";
 import { PartyManagement } from "./features/party-management/PartyManagement";
+import { Reports } from "./features/reports/Reports";
 import { SettlementReview } from "./features/settlement-review/SettlementReview";
 
 const entryPoints = [
@@ -11,6 +12,7 @@ const entryPoints = [
   { label: "اشخاص", section: "parties" },
   { label: "فاکتورها", section: "invoices" },
   { label: "ثبت پرداخت", section: "payments" },
+  { label: "گزارش‌ها", section: "reports" },
   { label: "مغایرت‌ها", section: "reconciliation" },
   { label: "پشتیبان‌گیری و بازیابی", section: "backup" }
 ] as const;
@@ -18,13 +20,14 @@ const entryPoints = [
 const homeActions = [
   { label: "ثبت فاکتور", target: "invoices" },
   { label: "ثبت پرداخت", target: "payments" },
+  { label: "گزارش‌ها", target: "reports" },
   { label: "جست‌وجوی شخص", target: "parties" },
   { label: "مشاهده مغایرت‌ها", target: "reconciliation" },
   { label: "آخرین پشتیبان", target: "backup" }
 ] as const;
 
 export function App() {
-  const [currentSection, setCurrentSection] = useState<"home" | "parties" | "invoices" | "payments" | "reconciliation" | "backup">("home");
+  const [currentSection, setCurrentSection] = useState<"home" | "parties" | "invoices" | "payments" | "reports" | "reconciliation" | "backup">("home");
 
   function scrollToHome() {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -42,6 +45,10 @@ export function App() {
     document.getElementById("payment-management")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
   }
 
+  function scrollToReports() {
+    document.getElementById("reports")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  }
+
   function scrollToSettlementReview() {
     document.getElementById("settlement-review")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
   }
@@ -53,14 +60,14 @@ export function App() {
   return (
     <main className="app-shell" lang="fa" dir="rtl">
       <section className="hero-card" aria-labelledby="app-title">
-        <p className="eyebrow">مرحله ۸</p>
+        <p className="eyebrow">مرحله ۹</p>
         <h1 id="app-title">تسویه‌یار</h1>
         <p className="hero-copy">
-          ابزار محلی و فارسی برای ثبت اشخاص، حساب‌های مقصد، فاکتورهای تک‌مبلغی، دستورهای پرداخت، پرداخت‌های واقعیِ هر فاکتور، و پشتیبان‌گیری امن از داده‌ها، با ذخیره‌سازی آفلاین، دسترسی سریع و تاریخچه قابل پیگیری.
+          ابزار محلی و فارسی برای ثبت اشخاص، حساب‌های مقصد، فاکتورهای تک‌مبلغی، دستورهای پرداخت، پرداخت‌های واقعیِ هر فاکتور، گزارش‌های عملیاتی و پشتیبان‌گیری امن از داده‌ها، با ذخیره‌سازی آفلاین، دسترسی سریع و تاریخچه قابل پیگیری.
         </p>
 
         <div className="status-banner" role="note" aria-label="notice">
-          این نسخه «صفحه اصلی»، «اشخاص»، «فاکتورها»، «ثبت پرداخت»، «مغایرت‌ها»، و «پشتیبان‌گیری و بازیابی» را فعال کرده است. دستورهای پرداخت داخل جزئیات هر فاکتور و پرداخت‌های واقعی در بخش جداگانه مدیریت می‌شوند.
+          این نسخه «صفحه اصلی»، «اشخاص»، «فاکتورها»، «ثبت پرداخت»، «گزارش‌ها»، «مغایرت‌ها»، و «پشتیبان‌گیری و بازیابی» را فعال کرده است. گزارش‌ها فقط خواندنی هستند و از داده‌های مشتق‌شده استفاده می‌کنند.
         </div>
       </section>
 
@@ -79,6 +86,8 @@ export function App() {
                 scrollToInvoiceManagement();
               } else if (entry.section === "payments") {
                 scrollToPaymentManagement();
+              } else if (entry.section === "reports") {
+                scrollToReports();
               } else if (entry.section === "parties") {
                 scrollToPartyManagement();
               } else if (entry.section === "reconciliation") {
@@ -114,6 +123,8 @@ export function App() {
                   scrollToInvoiceManagement();
                 } else if (action.target === "payments") {
                   scrollToPaymentManagement();
+                } else if (action.target === "reports") {
+                  scrollToReports();
                 } else if (action.target === "parties") {
                   scrollToPartyManagement();
                 } else if (action.target === "reconciliation") {
@@ -142,6 +153,8 @@ export function App() {
       </section>
 
       <SettlementReview />
+
+      <Reports />
 
       <BackupRestore />
 

@@ -2,16 +2,17 @@ import { useEffect, useState } from "react";
 import { InvoiceManagement } from "./features/invoice-management/InvoiceManagement";
 import { PaymentManagement } from "./features/payment-management/PaymentManagement";
 import { PartyManagement } from "./features/party-management/PartyManagement";
+import { SettlementReview } from "./features/settlement-review/SettlementReview";
 
 const entryPoints = [
   { label: "ثبت فاکتور", active: true },
   { label: "ثبت پرداخت", active: true },
   { label: "حساب اشخاص", active: true },
-  { label: "مغایرت‌ها", active: false }
+  { label: "مغایرت‌ها", active: true }
 ] as const;
 
 export function App() {
-  const [currentSection, setCurrentSection] = useState<"parties" | "invoices" | "payments">("payments");
+  const [currentSection, setCurrentSection] = useState<"parties" | "invoices" | "payments" | "reconciliation">("payments");
 
   function scrollToPartyManagement() {
     document.getElementById("party-management")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
@@ -23,6 +24,10 @@ export function App() {
 
   function scrollToPaymentManagement() {
     document.getElementById("payment-management")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  }
+
+  function scrollToSettlementReview() {
+    document.getElementById("settlement-review")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
   }
 
   useEffect(() => {
@@ -43,7 +48,7 @@ export function App() {
         </p>
 
         <div className="status-banner" role="note" aria-label="notice">
-          این نسخه «ثبت فاکتور»، «ثبت پرداخت»، و «حساب اشخاص» را فعال کرده است. دستورهای پرداخت داخل جزئیات هر فاکتور و پرداخت‌های واقعی در بخش جداگانه مدیریت می‌شوند.
+          این نسخه «ثبت فاکتور»، «ثبت پرداخت»، «حساب اشخاص»، و «مغایرت‌ها» را فعال کرده است. دستورهای پرداخت داخل جزئیات هر فاکتور و پرداخت‌های واقعی در بخش جداگانه مدیریت می‌شوند.
         </div>
       </section>
 
@@ -58,7 +63,8 @@ export function App() {
               entry.active &&
               ((entry.label === "حساب اشخاص" && currentSection === "parties") ||
                 (entry.label === "ثبت فاکتور" && currentSection === "invoices") ||
-                (entry.label === "ثبت پرداخت" && currentSection === "payments"))
+                (entry.label === "ثبت پرداخت" && currentSection === "payments") ||
+                (entry.label === "مغایرت‌ها" && currentSection === "reconciliation"))
                 ? "page"
                 : undefined
             }
@@ -73,6 +79,9 @@ export function App() {
                 } else if (entry.label === "حساب اشخاص") {
                   setCurrentSection("parties");
                   scrollToPartyManagement();
+                } else if (entry.label === "مغایرت‌ها") {
+                  setCurrentSection("reconciliation");
+                  scrollToSettlementReview();
                 }
               }
             }}
@@ -91,6 +100,8 @@ export function App() {
           <li>مشابهت‌های احتمالی باید دیده شوند، نه پنهان.</li>
         </ul>
       </section>
+
+      <SettlementReview />
 
       <InvoiceManagement onRequestPartyManagement={() => {
         setCurrentSection("parties");

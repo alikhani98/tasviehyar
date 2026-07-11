@@ -292,6 +292,19 @@ export function PaymentManagement({
     void loadContext();
   }, [loadContext]);
 
+  useEffect(() => {
+    function handleOpenRecord(event: Event) {
+      const detail = (event as CustomEvent<{ section?: string; recordId?: string }>).detail;
+      if (detail?.section === "payments" && detail.recordId) {
+        setSelectedPaymentId(detail.recordId);
+        document.getElementById("payment-management")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    window.addEventListener("tasviehyar-open-record", handleOpenRecord as EventListener);
+    return () => window.removeEventListener("tasviehyar-open-record", handleOpenRecord as EventListener);
+  }, []);
+
   const selectedPayment = useMemo(() => payments.find((payment) => payment.id === selectedPaymentId) ?? null, [payments, selectedPaymentId]);
 
   useEffect(() => {

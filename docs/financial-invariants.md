@@ -5,6 +5,8 @@
 - Floating-point arithmetic is not used for money.
 - Settlement states such as unpaid, partially paid, provisionally paid, fully settled, and overpaid are derived from records, not manually edited stored truth.
 - Invoice and payment-instruction settlement labels must always be recalculable from current records.
+- Customer and recipient settlement summaries must be derived from current records and must not be stored as editable truth.
+- Reconciliation views should surface mismatches without hiding or mutating financial history.
 - Confirmed payments affect confirmed and provisional balances.
 - Reported payments affect provisional balances only.
 - Rejected payments affect neither balance.

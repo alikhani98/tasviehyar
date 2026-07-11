@@ -1,6 +1,7 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Party, PartyRole } from "../../domain";
+import type { Invoice, Payment, PaymentAllocation, PaymentInstruction, Party, PartyRole } from "../../domain";
 import { partyRoleValues } from "../../domain";
+import { formatInvoiceAmount } from "../../domain/invoices";
 import {
   filterParties,
   findProbablePartyDraftWarnings,
@@ -13,17 +14,24 @@ import {
   type PartyRoleFilter,
   type PartyStatusFilter
 } from "../../domain/parties";
+import { summarizeCustomerSettlement, summarizeRecipientSettlement } from "../../domain/settlement";
 import { db } from "../../db/tasviehyar-db";
 import {
   createDestinationAccountRepository,
   type DestinationAccountRepository
 } from "../../services/destination-account-repository";
+import { createInvoiceRepository, type InvoiceRepository } from "../../services/invoice-repository";
 import { createPartyRepository, type PartyRepository } from "../../services/party-repository";
+import { createPaymentInstructionRepository, type PaymentInstructionRepository } from "../../services/payment-instruction-repository";
+import { createPaymentRepository, type PaymentRepository } from "../../services/payment-repository";
 import { DestinationAccountManagement } from "./DestinationAccountManagement";
 
 export interface PartyManagementProps {
   repository?: PartyRepository;
   destinationAccountRepository?: DestinationAccountRepository;
+  invoiceRepository?: InvoiceRepository;
+  paymentRepository?: PaymentRepository;
+  paymentInstructionRepository?: PaymentInstructionRepository;
 }
 
 const defaultFilter: PartyListFilter = {
@@ -52,6 +60,9 @@ const defaultFormState: PartyFormState = {
 
 const defaultPartyRepository = createPartyRepository(db);
 const defaultDestinationAccountRepository = createDestinationAccountRepository(db);
+const defaultInvoiceRepository = createInvoiceRepository(db);
+const defaultPaymentRepository = createPaymentRepository(db);
+const defaultPaymentInstructionRepository = createPaymentInstructionRepository(db);
 
 function splitAliases(value: string): string[] {
   return Array.from(
@@ -108,9 +119,16 @@ function formStateFromParty(party: Party): PartyFormState {
 
 export function PartyManagement({
   repository = defaultPartyRepository,
-  destinationAccountRepository = defaultDestinationAccountRepository
+  destinationAccountRepository = defaultDestinationAccountRepository,
+  invoiceRepository = defaultInvoiceRepository,
+  paymentRepository = defaultPaymentRepository,
+  paymentInstructionRepository = defaultPaymentInstructionRepository
 }: PartyManagementProps) {
   const [parties, setParties] = useState<Party[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [allocations, setAllocations] = useState<PaymentAllocation[]>([]);
+  const [instructions, setInstructions] = useState<PaymentInstruction[]>([]);
   const [selectedPartyId, setSelectedPartyId] = useState<string | null>(null);
   const [formState, setFormState] = useState<PartyFormState>(defaultFormState);
   const [filter, setFilter] = useState<PartyListFilter>(defaultFilter);
@@ -128,18 +146,28 @@ export function PartyManagement({
 
   const loadParties = useCallback(
     async (nextSelectionId?: string | null) => {
-      const records = await repository.listParties();
+      const [partyRecords, invoiceRecords, paymentRecords, allocationRecords, instructionRecords] = await Promise.all([
+        repository.listParties(),
+        invoiceRepository.listInvoices(),
+        paymentRepository.listPayments(),
+        paymentRepository.listAllocations(),
+        paymentInstructionRepository.listInstructions()
+      ]);
       if (!isMountedRef.current) {
         return;
       }
 
-      setParties(records);
+      setParties(partyRecords);
+      setInvoices(invoiceRecords);
+      setPayments(paymentRecords);
+      setAllocations(allocationRecords);
+      setInstructions(instructionRecords);
       setSelectedPartyId((currentSelected) => {
         if (typeof nextSelectionId !== "undefined") {
           return nextSelectionId;
         }
 
-        if (currentSelected && records.some((party) => party.id === currentSelected)) {
+        if (currentSelected && partyRecords.some((party) => party.id === currentSelected)) {
           return currentSelected;
         }
 
@@ -147,12 +175,25 @@ export function PartyManagement({
       });
       setLoading(false);
     },
-    [repository]
+    [invoiceRepository, paymentInstructionRepository, paymentRepository, repository]
   );
 
   useEffect(() => {
     void loadParties();
   }, [loadParties]);
+
+  useEffect(() => {
+    function handleOpenRecord(event: Event) {
+      const detail = (event as CustomEvent<{ section?: string; recordId?: string }>).detail;
+      if (detail?.section === "parties" && detail.recordId) {
+        setSelectedPartyId(detail.recordId);
+        document.getElementById("party-management")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    window.addEventListener("tasviehyar-open-record", handleOpenRecord as EventListener);
+    return () => window.removeEventListener("tasviehyar-open-record", handleOpenRecord as EventListener);
+  }, []);
 
   const selectedParty = useMemo(() => parties.find((party) => party.id === selectedPartyId) ?? null, [parties, selectedPartyId]);
 
@@ -171,6 +212,20 @@ export function PartyManagement({
     [formState, parties, selectedParty?.id]
   );
   const duplicateWarnings = useMemo(() => findProbablePartyDuplicateWarnings(parties), [parties]);
+  const selectedCustomerSummary = useMemo(
+    () =>
+      selectedParty
+        ? summarizeCustomerSettlement(selectedParty.id, invoices, instructions, payments, allocations, parties)
+        : null,
+    [allocations, invoices, parties, payments, selectedParty, instructions]
+  );
+  const selectedRecipientSummary = useMemo(
+    () =>
+      selectedParty
+        ? summarizeRecipientSettlement(selectedParty.id, instructions, payments, allocations, parties)
+        : null,
+    [allocations, instructions, parties, payments, selectedParty]
+  );
 
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -504,6 +559,54 @@ export function PartyManagement({
           {selectedParty.searchableDescription && <p className="detail-copy">{selectedParty.searchableDescription}</p>}
 
           {selectedParty.notes && <p className="detail-copy">{selectedParty.notes}</p>}
+
+          {selectedCustomerSummary && selectedCustomerSummary.invoiceCount > 0 && (
+            <div className="summary-card" aria-label="خلاصه مشتری">
+              <strong>خلاصه مشتری</strong>
+              <dl className="detail-grid">
+                <div>
+                  <dt>کل فاکتورها</dt>
+                  <dd>{selectedCustomerSummary.invoiceCount.toLocaleString("fa-IR")}</dd>
+                </div>
+                <div>
+                  <dt>مانده قطعی</dt>
+                  <dd>{formatInvoiceAmount(selectedCustomerSummary.confirmedOutstanding)}</dd>
+                </div>
+                <div>
+                  <dt>اعلام‌شده اما تأییدنشده</dt>
+                  <dd>{formatInvoiceAmount(selectedCustomerSummary.reportedUnconfirmed)}</dd>
+                </div>
+                <div>
+                  <dt>فاکتورهای باز</dt>
+                  <dd>{selectedCustomerSummary.openInvoiceCount.toLocaleString("fa-IR")}</dd>
+                </div>
+              </dl>
+            </div>
+          )}
+
+          {selectedRecipientSummary && selectedRecipientSummary.instructionCount > 0 && (
+            <div className="summary-card" aria-label="خلاصه گیرنده">
+              <strong>خلاصه گیرنده</strong>
+              <dl className="detail-grid">
+                <div>
+                  <dt>کل دستورها</dt>
+                  <dd>{selectedRecipientSummary.instructionCount.toLocaleString("fa-IR")}</dd>
+                </div>
+                <div>
+                  <dt>دریافت‌شده قطعی</dt>
+                  <dd>{formatInvoiceAmount(selectedRecipientSummary.confirmedReceived)}</dd>
+                </div>
+                <div>
+                  <dt>اعلام‌شده اما تأییدنشده</dt>
+                  <dd>{formatInvoiceAmount(selectedRecipientSummary.reportedUnconfirmed)}</dd>
+                </div>
+                <div>
+                  <dt>مانده</dt>
+                  <dd>{formatInvoiceAmount(selectedRecipientSummary.confirmedRemaining)}</dd>
+                </div>
+              </dl>
+            </div>
+          )}
         </section>
       )}
 

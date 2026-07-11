@@ -42,5 +42,6 @@
 ## Stage 6
 - Settlement balances and reconciliation
 - Derived customer and recipient summaries
-- Mismatch review list and payment/invoice settlement visibility
-- Simple summary cards for the home and detail views
+- Mismatch review list with navigation to invoices, payments, and parties
+- Settlement visibility inside invoice, party, and payment detail views
+- Simple summary cards for the home and reconciliation views

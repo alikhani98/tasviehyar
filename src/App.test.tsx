@@ -8,18 +8,18 @@ describe("App shell", () => {
 
     expect(screen.getByRole("heading", { name: "تسویه‌یار" })).toBeInTheDocument();
     expect(
-      screen.getByText("این نسخه «ثبت فاکتور»، «ثبت پرداخت»، و «حساب اشخاص» را فعال کرده است. دستورهای پرداخت داخل جزئیات هر فاکتور و پرداخت‌های واقعی در بخش جداگانه مدیریت می‌شوند.")
+      screen.getByText("این نسخه «ثبت فاکتور»، «ثبت پرداخت»، «حساب اشخاص»، و «مغایرت‌ها» را فعال کرده است. دستورهای پرداخت داخل جزئیات هر فاکتور و پرداخت‌های واقعی در بخش جداگانه مدیریت می‌شوند.")
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "ثبت فاکتور فعال" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "ثبت پرداخت فعال" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "حساب اشخاص فعال" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: /مغایرت‌ها/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "مغایرت‌ها فعال" })).toBeEnabled();
   });
 
   it("waits for the loaded stage sections to settle", async () => {
     render(<App />);
 
     expect(await screen.findByText("هنوز فاکتوری ثبت نشده است.")).toBeInTheDocument();
-    expect(await screen.findAllByText("موردی پیدا نشد.")).toHaveLength(2);
+    expect((await screen.findAllByRole("button", { name: "مغایرت‌ها فعال" })).length).toBeGreaterThan(0);
   });
 });

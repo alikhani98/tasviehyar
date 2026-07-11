@@ -18,6 +18,9 @@
 - Stage 5 records real payments separately from instructions so reported and confirmed states remain explicit.
 - Stage 5 payment verification history is append-only.
 - Stage 5 allocations can be split across invoices and instructions, but never exceed the payment amount.
+- Stage 6 settlement balances are derived from the current active records and are not stored as editable truth.
+- Stage 6 reconciliation highlights mismatches instead of silently fixing them.
+- Stage 6 summary cards are navigation aids, not additional data entry surfaces.
 - No hard deletion of financial records.
 - All money is stored in integer تومان values.
 - No commit, push, or pull request is created without explicit instruction.

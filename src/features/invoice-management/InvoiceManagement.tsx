@@ -1,5 +1,5 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Payment, PaymentAllocation, Party, Invoice } from "../../domain";
+import type { Payment, PaymentAllocation, PaymentInstruction, Party, Invoice } from "../../domain";
 import {
   filterInvoices,
   findProbableInvoiceDraftWarnings,
@@ -12,6 +12,7 @@ import {
   type InvoiceListFilter,
   type InvoiceStatusFilter
 } from "../../domain/invoices";
+import { summarizeInvoiceBalance, summarizeInstructionBalance } from "../../domain/settlement";
 import {
   formatPaymentLifecycleLabel,
   formatPaymentMethodLabel,
@@ -126,6 +127,7 @@ export function InvoiceManagement({
   const [parties, setParties] = useState<Party[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [paymentAllocations, setPaymentAllocations] = useState<PaymentAllocation[]>([]);
+  const [instructions, setInstructions] = useState<PaymentInstruction[]>([]);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
   const [formState, setFormState] = useState<InvoiceFormState>(emptyFormState);
   const [filter, setFilter] = useState<InvoiceListFilter>(defaultFilter);
@@ -144,11 +146,12 @@ export function InvoiceManagement({
 
   const loadData = useCallback(
     async (nextSelectionId?: string | null) => {
-      const [partyRecords, invoiceRecords, paymentRecords, allocationRecords] = await Promise.all([
+      const [partyRecords, invoiceRecords, paymentRecords, allocationRecords, instructionRecords] = await Promise.all([
         partyRepository.listParties(),
         repository.listInvoices(),
         paymentRepository.listPayments(),
-        paymentRepository.listAllocations()
+        paymentRepository.listAllocations(),
+        paymentInstructionRepository.listInstructions()
       ]);
       if (!isMountedRef.current) {
         return;
@@ -158,18 +161,32 @@ export function InvoiceManagement({
       setInvoices(invoiceRecords);
       setPayments(paymentRecords);
       setPaymentAllocations(allocationRecords);
+      setInstructions(instructionRecords);
       if (typeof nextSelectionId !== "undefined") {
         setSelectedInvoiceId(nextSelectionId);
       }
       setLoading(false);
     },
-    [partyRepository, paymentRepository, repository]
+    [partyRepository, paymentInstructionRepository, paymentRepository, repository]
   );
 
   useEffect(() => {
     setLoading(true);
     void loadData();
   }, [loadData]);
+
+  useEffect(() => {
+    function handleOpenRecord(event: Event) {
+      const detail = (event as CustomEvent<{ section?: string; recordId?: string }>).detail;
+      if (detail?.section === "invoices" && detail.recordId) {
+        setSelectedInvoiceId(detail.recordId);
+        document.getElementById("invoice-management")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    window.addEventListener("tasviehyar-open-record", handleOpenRecord as EventListener);
+    return () => window.removeEventListener("tasviehyar-open-record", handleOpenRecord as EventListener);
+  }, []);
 
   useEffect(() => {
     function handleDataChange() {
@@ -224,6 +241,26 @@ export function InvoiceManagement({
     [payments, selectedInvoicePaymentAllocations]
   );
   const draftCandidate = useMemo(() => buildDraftCandidate(formState), [formState]);
+  const selectedInvoiceInstructions = useMemo(
+    () => instructions.filter((instruction) => instruction.invoiceId === selectedInvoice?.id && instruction.lifecycleStatus === "active"),
+    [instructions, selectedInvoice?.id]
+  );
+  const selectedInvoiceSummary = useMemo(
+    () =>
+      selectedInvoice
+        ? summarizeInvoiceBalance(
+            selectedInvoice,
+            selectedInvoiceInstructions,
+            payments,
+            paymentAllocations.filter((allocation) => allocation.invoiceId === selectedInvoice.id)
+          )
+        : null,
+    [paymentAllocations, payments, selectedInvoice, selectedInvoiceInstructions]
+  );
+  const selectedInstructionSummaries = useMemo(
+    () => selectedInvoiceInstructions.map((instruction) => summarizeInstructionBalance(instruction, payments, paymentAllocations)),
+    [paymentAllocations, payments, selectedInvoiceInstructions]
+  );
   const duplicateWarnings = useMemo(
     () => (draftCandidate ? findProbableInvoiceDraftWarnings(invoices, parties, draftCandidate, selectedInvoice?.id) : []),
     [draftCandidate, invoices, parties, selectedInvoice?.id]
@@ -606,6 +643,69 @@ export function InvoiceManagement({
               <dd>{selectedInvoice.note ?? "ثبت نشده"}</dd>
             </div>
           </dl>
+
+          {selectedInvoiceSummary && (
+            <div className="summary-card" aria-label="خلاصه تسویه فاکتور">
+              <strong>خلاصه مالی</strong>
+              <dl className="detail-grid">
+                <div>
+                  <dt>مبلغ کل</dt>
+                  <dd>{formatInvoiceAmount(selectedInvoiceSummary.invoiceTotal)}</dd>
+                </div>
+                <div>
+                  <dt>پرداخت تأییدشده</dt>
+                  <dd>{formatInvoiceAmount(selectedInvoiceSummary.confirmedAllocatedAmount)}</dd>
+                </div>
+                <div>
+                  <dt>پرداخت اعلام‌شده</dt>
+                  <dd>{formatInvoiceAmount(selectedInvoiceSummary.reportedAllocatedAmount)}</dd>
+                </div>
+                <div>
+                  <dt>مانده قطعی</dt>
+                  <dd>{formatInvoiceAmount(selectedInvoiceSummary.confirmedOutstandingAmount)}</dd>
+                </div>
+                <div>
+                  <dt>مانده احتمالی</dt>
+                  <dd>{formatInvoiceAmount(selectedInvoiceSummary.provisionalOutstandingAmount)}</dd>
+                </div>
+                <div>
+                  <dt>مبلغ دارای دستور</dt>
+                  <dd>{formatInvoiceAmount(selectedInvoiceSummary.activeInstructedTotal)}</dd>
+                </div>
+                <div>
+                  <dt>مبلغ بدون مقصد</dt>
+                  <dd>{formatInvoiceAmount(selectedInvoiceSummary.unassignedInvoiceAmount)}</dd>
+                </div>
+                <div>
+                  <dt>مبلغ بیش‌پرداخت</dt>
+                  <dd>{formatInvoiceAmount(selectedInvoiceSummary.overpaymentAmount)}</dd>
+                </div>
+              </dl>
+              <p className="detail-copy">وضعیت تسویه: {selectedInvoiceSummary.derivedSettlementLabel}</p>
+            </div>
+          )}
+
+          {selectedInstructionSummaries.length > 0 && (
+            <div className="summary-card" aria-label="پیشرفت دستورهای فاکتور">
+              <strong>پیشرفت دستور پرداخت</strong>
+              <div className="party-list">
+                {selectedInstructionSummaries.map((summary) => (
+                  <div key={summary.instructionId} className="party-row">
+                    <div className="party-row-top">
+                      <strong>{summary.instructionId}</strong>
+                      <span className="status-pill status-active">{summary.derivedInstructionLabel}</span>
+                    </div>
+                    <div className="party-row-meta">
+                      دریافت قطعی: {formatInvoiceAmount(summary.confirmedReceived)} · اعلام‌شده: {formatInvoiceAmount(summary.reportedButUnconfirmedAmount)}
+                    </div>
+                    <div className="party-row-meta">
+                      مانده قطعی: {formatInvoiceAmount(summary.confirmedRemainingAmount)} · مانده احتمالی: {formatInvoiceAmount(summary.provisionalRemainingAmount)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="detail-grid">
             <div>

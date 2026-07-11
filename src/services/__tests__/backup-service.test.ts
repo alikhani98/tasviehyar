@@ -195,6 +195,28 @@ describe("backup service", () => {
     expect((await targetService.getHistorySummary()).lastRestore).not.toBeNull();
   });
 
+  it("exports a ready-made demo backup without mutating the live database", async () => {
+    const database = createDatabase("backup-demo");
+    const service = createService(database);
+
+    const exported = await service.exportDemoBackup();
+
+    expect(exported.filename).toMatch(/^tasviehyar-demo-backup-\d{4}-\d{2}-\d{2}-\d{4}\.json$/);
+    expect(exported.preview.compatible).toBe(true);
+    expect(exported.preview.recordCounts).toEqual({
+      parties: 6,
+      destinationAccounts: 6,
+      invoices: 5,
+      paymentInstructions: 5,
+      payments: 10,
+      paymentAllocations: 7,
+      paymentVerifications: 7,
+      auditEvents: 51
+    });
+    expect(await database.parties.count()).toBe(0);
+    expect(await database.auditEvents.count()).toBe(0);
+  });
+
   it("restores an empty-database backup round-trip", async () => {
     const sourceDatabase = createDatabase("backup-empty-source");
     const targetDatabase = createDatabase("backup-empty-target");

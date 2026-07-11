@@ -27,6 +27,10 @@
 - Stage 9 reports are read-only derivations of existing records and do not create stored summary tables.
 - Stage 9 Excel exports are reports, not backups, and cannot be restored into TasviehYar.
 - Stage 9 exported files contain sensitive financial information, while bank identifiers are masked by default in the UI.
+- Stage 10 keeps one visual language across the shell and feature areas instead of introducing separate page styles.
+- Stage 10 demo backups are generated separately from live backups so the demo flow does not mutate the user's real local history.
+- Stage 10 demo data is fictional and isolated from the live IndexedDB database.
+- Stage 10 demo backup restore is replace-all, not merge, just like the live backup workflow.
 - No hard deletion of financial records.
 - All money is stored in integer تومان values.
 - No commit, push, or pull request is created without explicit instruction.

@@ -6,6 +6,7 @@ import { BackupService, type BackupExportResult, type BackupInspectionResult, ty
 
 export interface BackupRestoreService {
   exportBackup(): Promise<BackupExportResult>;
+  exportDemoBackup?: () => Promise<BackupExportResult>;
   inspectBackupText(text: string): Promise<BackupInspectionResult>;
   restoreBackupText(text: string): Promise<BackupRestoreResult>;
   getHistorySummary(): BackupHistorySummary;
@@ -145,6 +146,32 @@ export function BackupRestore({ service = defaultService }: BackupRestoreProps) 
     }
   }
 
+  async function handleExportDemoBackup() {
+    if (!service.exportDemoBackup) {
+      setError("پشتیبان نمایشی در این نسخه در دسترس نیست.");
+      return;
+    }
+
+    setExporting(true);
+    setNotice(null);
+    setError(null);
+
+    try {
+      const result = await service.exportDemoBackup();
+      downloadTextFile(result.filename, result.text);
+      setPreview(result.preview);
+      setSelectedFileName(result.filename);
+      setSelectedFileText(result.text);
+      setNotice(`پشتیبان نمایشی با نام «${result.filename}» آماده و دانلود شد.`);
+      refreshHistory();
+      void refreshCurrentCounts();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "تهیه پشتیبان نمایشی ناموفق بود.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   async function handleFileSelection(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) {
@@ -248,6 +275,9 @@ export function BackupRestore({ service = defaultService }: BackupRestoreProps) 
       <div className="form-actions">
         <button type="button" className="primary-button" onClick={() => void handleExportCurrentBackup()} disabled={exporting || restoring}>
           دریافت فایل پشتیبان
+        </button>
+        <button type="button" className="secondary-button" onClick={() => void handleExportDemoBackup()} disabled={exporting || restoring}>
+          دریافت پشتیبان نمایشی
         </button>
         <button type="button" className="secondary-button" onClick={() => fileInputRef.current?.click()} disabled={exporting || restoring}>
           بازیابی از فایل

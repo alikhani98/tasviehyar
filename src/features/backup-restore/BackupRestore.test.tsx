@@ -54,6 +54,12 @@ describe("backup restore UI", () => {
         preview: makePreview(),
         checksum: "abc123"
       })),
+      exportDemoBackup: vi.fn(async (): Promise<BackupExportResult> => ({
+        filename: "tasviehyar-demo-backup-2026-07-10-1000.json",
+        text: "{}",
+        preview: makePreview(),
+        checksum: "abc123"
+      })),
       inspectBackupText: vi.fn(async (): Promise<BackupInspectionResult> => ({
         envelope: null,
         preview: makePreview()
@@ -77,6 +83,7 @@ describe("backup restore UI", () => {
     expect(screen.getByRole("heading", { name: "پشتیبان‌گیری و بازیابی" })).toBeInTheDocument();
     expect(screen.getByText("این فایل‌ها حاوی اطلاعات مالی و هویتی حساس هستند. پشتیبان‌ها را فقط در محل‌های امن نگه دارید و بهتر است بیش از یک نسخه در مکان‌های جداگانه داشته باشید.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "دریافت فایل پشتیبان" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "دریافت پشتیبان نمایشی" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "بازیابی از فایل" })).toBeEnabled();
   });
 
@@ -86,6 +93,12 @@ describe("backup restore UI", () => {
     const service = {
       exportBackup: vi.fn(async (): Promise<BackupExportResult> => ({
         filename: "tasviehyar-backup-2026-07-10-1000.json",
+        text: "{}",
+        preview: makePreview(),
+        checksum: "abc123"
+      })),
+      exportDemoBackup: vi.fn(async (): Promise<BackupExportResult> => ({
+        filename: "tasviehyar-demo-backup-2026-07-10-1000.json",
         text: "{}",
         preview: makePreview(),
         checksum: "abc123"

@@ -1,6 +1,7 @@
 import { type ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 import { db } from "../../db/tasviehyar-db";
 import { type BackupHistorySummary, type BackupPreview } from "../../domain/backup";
+import { formatInvoiceTimestamp } from "../../domain/invoices";
 import { BackupService, type BackupExportResult, type BackupInspectionResult, type BackupRestoreResult } from "../../services/backup-service";
 
 export interface BackupRestoreService {
@@ -217,8 +218,8 @@ export function BackupRestore({ service = defaultService }: BackupRestoreProps) 
       </div>
 
       <div className="summary-strip" aria-label="خلاصه پشتیبان">
-        <span>آخرین پشتیبان: {lastBackup ? lastBackup.createdAt : "ثبت نشده"}</span>
-        <span>آخرین بازیابی: {lastRestore ? lastRestore.createdAt : "ثبت نشده"}</span>
+        <span>آخرین پشتیبان: {lastBackup ? formatInvoiceTimestamp(lastBackup.createdAt) : "ثبت نشده"}</span>
+        <span>آخرین بازیابی: {lastRestore ? formatInvoiceTimestamp(lastRestore.createdAt) : "ثبت نشده"}</span>
         <span>دفعات ثبت‌شده: {historySummary.entries.length.toLocaleString("fa-IR")}</span>
       </div>
 

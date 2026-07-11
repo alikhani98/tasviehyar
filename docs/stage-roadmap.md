@@ -51,3 +51,10 @@
 - Local backup export with metadata and checksum
 - Restore preview, replace-all recovery, and transactional writes
 - Integrity validation, warnings, and backup history metadata
+
+## Stage 8
+- Pilot readiness, offline reliability, and UX polish
+- Direct navigation to the main app areas and a simpler home page
+- Installable shell, offline loading, and local-data access
+- Money/date preview improvements and safer destructive-action flows
+- Pilot readiness panel, manual smoke test, and end-to-end workflow verification

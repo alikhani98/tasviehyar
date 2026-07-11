@@ -79,6 +79,27 @@ function normalizeInvoiceAmountText(value: string): string {
   return normalizeDigitGlyphs(value).replace(/[,\u066C\u060C_\s\u200c\u200f]/gu, "");
 }
 
+export function normalizeInvoiceAmountInputText(value: string): string {
+  return normalizeInvoiceAmountText(value);
+}
+
+function createPersianDateFormatter(options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  try {
+    return new Intl.DateTimeFormat("fa-IR-u-ca-persian", options);
+  } catch {
+    return new Intl.DateTimeFormat("fa-IR-u-ca-gregory", options);
+  }
+}
+
+function parseDateValue(value: string): Date | null {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = value.length === 10 ? new Date(`${value}T12:00:00.000Z`) : new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
 export function parseInvoiceAmountInput(value: string): number {
   const normalized = normalizeInvoiceAmountText(value);
   if (!normalized) {
@@ -110,11 +131,31 @@ export function formatInvoiceAmount(amount: number): string {
 }
 
 export function formatInvoiceDate(date: string): string {
-  return new Intl.DateTimeFormat("fa-IR-u-ca-gregory", {
+  const parsed = parseDateValue(date);
+  if (!parsed) {
+    return date;
+  }
+
+  return createPersianDateFormatter({
     year: "numeric",
     month: "2-digit",
     day: "2-digit"
-  }).format(new Date(`${date}T12:00:00.000Z`));
+  }).format(parsed);
+}
+
+export function formatInvoiceTimestamp(timestamp: string): string {
+  const parsed = parseDateValue(timestamp);
+  if (!parsed) {
+    return timestamp;
+  }
+
+  return createPersianDateFormatter({
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(parsed);
 }
 
 function normalizeDraftValue(draft: {

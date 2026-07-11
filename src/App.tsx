@@ -1,20 +1,34 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { InvoiceManagement } from "./features/invoice-management/InvoiceManagement";
 import { BackupRestore } from "./features/backup-restore/BackupRestore";
+import { PilotReadinessPanel } from "./features/pilot-readiness/PilotReadinessPanel";
 import { PaymentManagement } from "./features/payment-management/PaymentManagement";
 import { PartyManagement } from "./features/party-management/PartyManagement";
 import { SettlementReview } from "./features/settlement-review/SettlementReview";
 
 const entryPoints = [
-  { label: "ثبت فاکتور", active: true },
-  { label: "ثبت پرداخت", active: true },
-  { label: "حساب اشخاص", active: true },
-  { label: "مغایرت‌ها", active: true },
-  { label: "پشتیبان‌گیری و بازیابی", active: true }
+  { label: "صفحه اصلی", section: "home" },
+  { label: "اشخاص", section: "parties" },
+  { label: "فاکتورها", section: "invoices" },
+  { label: "ثبت پرداخت", section: "payments" },
+  { label: "مغایرت‌ها", section: "reconciliation" },
+  { label: "پشتیبان‌گیری و بازیابی", section: "backup" }
+] as const;
+
+const homeActions = [
+  { label: "ثبت فاکتور", target: "invoices" },
+  { label: "ثبت پرداخت", target: "payments" },
+  { label: "جست‌وجوی شخص", target: "parties" },
+  { label: "مشاهده مغایرت‌ها", target: "reconciliation" },
+  { label: "آخرین پشتیبان", target: "backup" }
 ] as const;
 
 export function App() {
-  const [currentSection, setCurrentSection] = useState<"parties" | "invoices" | "payments" | "reconciliation" | "backup">("payments");
+  const [currentSection, setCurrentSection] = useState<"home" | "parties" | "invoices" | "payments" | "reconciliation" | "backup">("home");
+
+  function scrollToHome() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   function scrollToPartyManagement() {
     document.getElementById("party-management")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
@@ -36,78 +50,94 @@ export function App() {
     document.getElementById("backup-restore")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
   }
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      scrollToPaymentManagement();
-    }, 0);
-
-    return () => window.clearTimeout(timer);
-  }, []);
-
   return (
     <main className="app-shell" lang="fa" dir="rtl">
       <section className="hero-card" aria-labelledby="app-title">
-        <p className="eyebrow">مرحله ۷</p>
+        <p className="eyebrow">مرحله ۸</p>
         <h1 id="app-title">تسویه‌یار</h1>
         <p className="hero-copy">
-          ابزار محلی و فارسی برای ثبت اشخاص، حساب‌های مقصد، فاکتورهای تک‌مبلغی، دستورهای پرداخت، پرداخت‌های واقعیِ هر فاکتور، و پشتیبان‌گیری امن از داده‌ها، با ذخیره‌سازی آفلاین و تاریخچه قابل پیگیری.
+          ابزار محلی و فارسی برای ثبت اشخاص، حساب‌های مقصد، فاکتورهای تک‌مبلغی، دستورهای پرداخت، پرداخت‌های واقعیِ هر فاکتور، و پشتیبان‌گیری امن از داده‌ها، با ذخیره‌سازی آفلاین، دسترسی سریع و تاریخچه قابل پیگیری.
         </p>
 
         <div className="status-banner" role="note" aria-label="notice">
-          این نسخه «ثبت فاکتور»، «ثبت پرداخت»، «حساب اشخاص»، «مغایرت‌ها»، و «پشتیبان‌گیری و بازیابی» را فعال کرده است. دستورهای پرداخت داخل جزئیات هر فاکتور و پرداخت‌های واقعی در بخش جداگانه مدیریت می‌شوند.
+          این نسخه «صفحه اصلی»، «اشخاص»، «فاکتورها»، «ثبت پرداخت»، «مغایرت‌ها»، و «پشتیبان‌گیری و بازیابی» را فعال کرده است. دستورهای پرداخت داخل جزئیات هر فاکتور و پرداخت‌های واقعی در بخش جداگانه مدیریت می‌شوند.
         </div>
       </section>
 
-      <section className="entry-grid" aria-label="نقاط ورود">
+      <nav className="app-navigation" aria-label="پیمایش برنامه">
         {entryPoints.map((entry) => (
           <button
             key={entry.label}
             type="button"
-            className={entry.active ? "entry-card entry-card-active" : "entry-card"}
-            disabled={!entry.active}
-            aria-current={
-              entry.active &&
-              ((entry.label === "حساب اشخاص" && currentSection === "parties") ||
-                (entry.label === "ثبت فاکتور" && currentSection === "invoices") ||
-                (entry.label === "ثبت پرداخت" && currentSection === "payments") ||
-                (entry.label === "مغایرت‌ها" && currentSection === "reconciliation") ||
-                (entry.label === "پشتیبان‌گیری و بازیابی" && currentSection === "backup"))
-                ? "page"
-                : undefined
-            }
+            className={currentSection === entry.section ? "entry-card entry-card-active" : "entry-card"}
+            aria-current={currentSection === entry.section ? "page" : undefined}
             onClick={() => {
-              if (entry.active) {
-                if (entry.label === "ثبت فاکتور") {
-                  setCurrentSection("invoices");
-                  scrollToInvoiceManagement();
-                } else if (entry.label === "ثبت پرداخت") {
-                  setCurrentSection("payments");
-                  scrollToPaymentManagement();
-                } else if (entry.label === "حساب اشخاص") {
-                  setCurrentSection("parties");
-                  scrollToPartyManagement();
-                } else if (entry.label === "مغایرت‌ها") {
-                  setCurrentSection("reconciliation");
-                  scrollToSettlementReview();
-                } else if (entry.label === "پشتیبان‌گیری و بازیابی") {
-                  setCurrentSection("backup");
-                  scrollToBackupRestore();
-                }
+              setCurrentSection(entry.section);
+              if (entry.section === "home") {
+                scrollToHome();
+              } else if (entry.section === "invoices") {
+                scrollToInvoiceManagement();
+              } else if (entry.section === "payments") {
+                scrollToPaymentManagement();
+              } else if (entry.section === "parties") {
+                scrollToPartyManagement();
+              } else if (entry.section === "reconciliation") {
+                scrollToSettlementReview();
+              } else if (entry.section === "backup") {
+                scrollToBackupRestore();
               }
             }}
           >
             <span className="entry-label">{entry.label}</span>
-            <span className="entry-meta">{entry.active ? "فعال" : "فعلا آماده نیست"}</span>
+            <span className="entry-meta">فعال</span>
           </button>
         ))}
+      </nav>
+
+      <section id="home" className="home-panel" aria-labelledby="home-panel-title">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">صفحه اصلی</p>
+            <h2 id="home-panel-title">کارهای فوری</h2>
+          </div>
+        </div>
+
+        <div className="home-action-grid" aria-label="اقدام‌های فوری">
+          {homeActions.map((action) => (
+            <button
+              key={action.label}
+              type="button"
+              className="home-action-card"
+              onClick={() => {
+                setCurrentSection(action.target);
+                if (action.target === "invoices") {
+                  scrollToInvoiceManagement();
+                } else if (action.target === "payments") {
+                  scrollToPaymentManagement();
+                } else if (action.target === "parties") {
+                  scrollToPartyManagement();
+                } else if (action.target === "reconciliation") {
+                  scrollToSettlementReview();
+                } else if (action.target === "backup") {
+                  scrollToBackupRestore();
+                }
+              }}
+            >
+              <span className="entry-label">{action.label}</span>
+              <span className="entry-meta">باز کردن بخش</span>
+            </button>
+          ))}
+        </div>
+
+        <PilotReadinessPanel />
       </section>
 
       <section className="principles-card" aria-label="یادداشت مرحله">
-        <h2>یادداشت اجرا</h2>
+        <h2>یادداشت پایلوت</h2>
         <ul>
-          <li>داده‌های اشخاص در دستگاه و داخل IndexedDB نگه‌داری می‌شوند.</li>
-          <li>اشخاص می‌توانند چند نقش هم‌زمان داشته باشند.</li>
-          <li>مشابهت‌های احتمالی باید دیده شوند، نه پنهان.</li>
+          <li>داده‌ها محلی و آفلاین باقی می‌مانند.</li>
+          <li>برای پایلوت، دفتر کاغذی و برنامه باید هم‌زمان بررسی شوند.</li>
+          <li>اختلاف‌ها باید دیده شوند، نه پنهان.</li>
         </ul>
       </section>
 

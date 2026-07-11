@@ -27,7 +27,7 @@ import {
   type PaymentListFilter,
   type PaymentVerificationDraft
 } from "../../domain/payments";
-import { formatInvoiceAmount } from "../../domain/invoices";
+import { formatInvoiceAmount, formatInvoiceDate, normalizeInvoiceAmountInputText } from "../../domain/invoices";
 import { db } from "../../db/tasviehyar-db";
 import { createDestinationAccountRepository, type DestinationAccountRepository } from "../../services/destination-account-repository";
 import { createInvoiceRepository, type InvoiceRepository } from "../../services/invoice-repository";
@@ -567,6 +567,10 @@ export function PaymentManagement({
   }
 
   function selectPayment(payment: Payment) {
+    if (payment.id !== selectedPaymentId && !requestDiscardChanges()) {
+      return;
+    }
+
     setSelectedPaymentId(payment.id);
     setNotice(null);
     setError(null);
@@ -574,6 +578,10 @@ export function PaymentManagement({
   }
 
   function clearSelection() {
+    if (!requestDiscardChanges()) {
+      return;
+    }
+
     setSelectedPaymentId(null);
     setFormState(emptyPaymentFormState);
     setAllocationFormState(emptyAllocationFormState);
@@ -597,6 +605,29 @@ export function PaymentManagement({
     formState.initialInstructionId.trim().length > 0 ||
     formState.initialAllocationAmountText.trim().length > 0;
   const selectedPaymentIsEditable = selectedPayment ? isPaymentEditable(selectedPayment) : false;
+  const hasUnsavedChanges = formIsDirty;
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) {
+      return;
+    }
+
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => window.removeEventListener("beforeunload", beforeUnload);
+  }, [hasUnsavedChanges]);
+
+  function requestDiscardChanges(): boolean {
+    if (!hasUnsavedChanges) {
+      return true;
+    }
+
+    return window.confirm("تغییرات ذخیره‌نشده از بین می‌روند. ادامه می‌دهید؟");
+  }
 
   const selectedPayer = parties.find((party) => party.id === formState.payerPartyId);
   const selectedRecipient = parties.find((party) => party.id === formState.recipientPartyId);
@@ -679,28 +710,37 @@ export function PaymentManagement({
                 </select>
               </label>
 
-              <label className="field">
-                <span>مبلغ پرداخت</span>
+              <div className="field">
+                <label htmlFor="payment-amount-input">
+                  <span>مبلغ پرداخت</span>
+                </label>
                 <input
+                  id="payment-amount-input"
                   required
                   value={formState.amountText}
-                  onChange={(event) => setFormState((current) => ({ ...current, amountText: event.target.value }))}
+                  onChange={(event) => setFormState((current) => ({ ...current, amountText: normalizeInvoiceAmountInputText(event.target.value) }))}
                   inputMode="numeric"
+                  dir="ltr"
                   placeholder="مثلا ۱۰۰٬۰۰۰٬۰۰۰"
                 />
-              </label>
+                <p className="field-hint">{paymentDraft ? formatInvoiceAmount(paymentDraft.amount) : "مبلغ را به تومان وارد کنید."}</p>
+              </div>
             </div>
 
             <div className="form-grid">
-              <label className="field">
-                <span>تاریخ پرداخت</span>
+              <div className="field">
+                <label htmlFor="payment-date-input">
+                  <span>تاریخ پرداخت</span>
+                </label>
                 <input
+                  id="payment-date-input"
                   required
                   type="date"
                   value={formState.paymentDate}
                   onChange={(event) => setFormState((current) => ({ ...current, paymentDate: event.target.value }))}
                 />
-              </label>
+                <p className="field-hint">{formState.paymentDate ? formatInvoiceDate(formState.paymentDate) : "بعد از انتخاب تاریخ، پیش‌نمایش اینجا دیده می‌شود."}</p>
+              </div>
 
               <label className="field">
                 <span>روش پرداخت</span>
@@ -820,16 +860,27 @@ export function PaymentManagement({
                 </label>
               </div>
 
-              <label className="field">
-                <span>مبلغ تخصیص اولیه</span>
+              <div className="field">
+                <label htmlFor="initial-allocation-amount-input">
+                  <span>مبلغ تخصیص اولیه</span>
+                </label>
                 <input
+                  id="initial-allocation-amount-input"
                   value={formState.initialAllocationAmountText}
-                  onChange={(event) => setFormState((current) => ({ ...current, initialAllocationAmountText: event.target.value }))}
+                  onChange={(event) =>
+                    setFormState((current) => ({ ...current, initialAllocationAmountText: normalizeInvoiceAmountInputText(event.target.value) }))
+                  }
                   inputMode="numeric"
+                  dir="ltr"
                   placeholder="اختیاری"
                   disabled={Boolean(selectedPayment)}
                 />
-              </label>
+                <p className="field-hint">
+                  {buildAllocationDraftCandidate(formState, instructions)
+                    ? formatInvoiceAmount(buildAllocationDraftCandidate(formState, instructions)!.allocatedAmount)
+                    : "اگر تخصیص اولیه می‌خواهید، مبلغ را وارد کنید."}
+                </p>
+              </div>
             </fieldset>
 
             {paymentDraft && (
@@ -1025,7 +1076,7 @@ export function PaymentManagement({
             </div>
             <div>
               <dt>تاریخ پرداخت</dt>
-              <dd>{selectedPayment.paymentDate}</dd>
+              <dd>{formatInvoiceDate(selectedPayment.paymentDate)}</dd>
             </div>
             <div>
               <dt>شماره پیگیری</dt>

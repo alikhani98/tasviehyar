@@ -29,9 +29,9 @@ describe("party management UI", () => {
   it("keeps the invoice and party entry points enabled in the shell", () => {
     render(<App />);
 
-    expect(screen.getByRole("button", { name: "ثبت فاکتور فعال" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "حساب اشخاص فعال" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "ثبت پرداخت فعال" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "ثبت فاکتور باز کردن بخش" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "جست‌وجوی شخص باز کردن بخش" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "ثبت پرداخت باز کردن بخش" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "مغایرت‌ها فعال" })).toBeEnabled();
     expect(screen.getByRole("heading", { name: "ثبت فاکتور" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "حساب اشخاص" })).toBeInTheDocument();

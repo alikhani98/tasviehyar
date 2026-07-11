@@ -60,6 +60,14 @@ This stage adds backup and restore safety:
 - preview before restore and replace-all transactional recovery
 - integrity validation, restore warnings, and backup history metadata
 
+## Stage 8
+This stage prepares the app for controlled pilot use:
+- direct navigation to the home, people, invoices, payments, reconciliation, and backup areas
+- a simpler home page with pilot priorities and local readiness status
+- offline loading with an installable shell and local data access
+- clearer money and date previews, plus protection for unsafe actions and unsaved changes
+- backup/pilot reminders and end-to-end workflow verification
+
 ## Scripts
 - `npm run dev`
 - `npm run build`

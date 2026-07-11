@@ -5,6 +5,8 @@ import {
   findProbableInvoiceDraftWarnings,
   formatInvoiceAmount,
   formatInvoiceDate,
+  formatInvoiceTimestamp,
+  normalizeInvoiceAmountInputText,
   invoiceDraftSchema,
   invoiceStatusFilterValues,
   parseInvoiceDraftFromInvoice,
@@ -334,6 +336,7 @@ export function InvoiceManagement({
         : await repository.createInvoice(parsedDraft);
 
       await loadData(savedInvoice.id);
+      window.dispatchEvent(new Event("tasviehyar-data-updated"));
       setNotice(selectedInvoice ? "فاکتور با موفقیت به‌روزرسانی شد." : "فاکتور جدید با موفقیت ثبت شد.");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "ذخیره‌سازی ناموفق بود.");
@@ -359,6 +362,7 @@ export function InvoiceManagement({
     try {
       const updatedInvoice = await repository.cancelInvoice(selectedInvoice.id);
       await loadData(updatedInvoice.id);
+      window.dispatchEvent(new Event("tasviehyar-data-updated"));
       setNotice("فاکتور لغو شد.");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "عملیات ناموفق بود.");
@@ -437,28 +441,37 @@ export function InvoiceManagement({
             </label>
 
             <div className="form-grid">
-              <label className="field">
-                <span>تاریخ فاکتور</span>
+              <div className="field">
+                <label htmlFor="invoice-date-input">
+                  <span>تاریخ فاکتور</span>
+                </label>
                 <input
+                  id="invoice-date-input"
                   type="date"
                   required
                   value={formState.invoiceDate}
                   disabled={!selectedInvoiceIsEditable}
                   onChange={(event) => setFormState((current) => ({ ...current, invoiceDate: event.target.value }))}
                 />
-              </label>
+                <p className="field-hint">{formState.invoiceDate ? formatInvoiceDate(formState.invoiceDate) : "بعد از انتخاب تاریخ، پیش‌نمایش اینجا دیده می‌شود."}</p>
+              </div>
 
-              <label className="field">
-                <span>مبلغ کل فاکتور</span>
+              <div className="field">
+                <label htmlFor="invoice-amount-input">
+                  <span>مبلغ کل فاکتور</span>
+                </label>
                 <input
+                  id="invoice-amount-input"
                   required
                   value={formState.totalAmountText}
                   disabled={!selectedInvoiceIsEditable}
-                  onChange={(event) => setFormState((current) => ({ ...current, totalAmountText: event.target.value }))}
+                  onChange={(event) => setFormState((current) => ({ ...current, totalAmountText: normalizeInvoiceAmountInputText(event.target.value) }))}
                   inputMode="numeric"
+                  dir="ltr"
                   placeholder="مثلا: 125000000"
                 />
-              </label>
+                <p className="field-hint">{draftCandidate ? formatInvoiceAmount(draftCandidate.totalAmount) : "مبلغ را به تومان وارد کنید."}</p>
+              </div>
             </div>
 
             <label className="field">
@@ -710,11 +723,11 @@ export function InvoiceManagement({
           <div className="detail-grid">
             <div>
               <dt>ایجاد شده</dt>
-              <dd>{selectedInvoice.createdAt}</dd>
+              <dd>{formatInvoiceTimestamp(selectedInvoice.createdAt)}</dd>
             </div>
             <div>
               <dt>آخرین تغییر</dt>
-              <dd>{selectedInvoice.updatedAt}</dd>
+              <dd>{formatInvoiceTimestamp(selectedInvoice.updatedAt)}</dd>
             </div>
           </div>
         </section>

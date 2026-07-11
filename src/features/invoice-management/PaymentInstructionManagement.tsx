@@ -11,6 +11,7 @@ import {
   type PaymentInstructionDraft,
   type PaymentInstructionListFilter
 } from "../../domain/payment-instructions";
+import { formatInvoiceDate, formatInvoiceTimestamp, normalizeInvoiceAmountInputText } from "../../domain/invoices";
 import { createDestinationAccountRepository, type DestinationAccountRepository } from "../../services/destination-account-repository";
 import { createPaymentInstructionRepository, type PaymentInstructionRepository } from "../../services/payment-instruction-repository";
 import { db } from "../../db/tasviehyar-db";
@@ -227,6 +228,7 @@ export function PaymentInstructionManagement({
   const unassignedInvoiceAmount = Math.max(0, invoice.totalAmount - activeInstructionTotal);
   const selectedInstructionIsEditable = !selectedInstruction || selectedInstruction.lifecycleStatus === "active";
   const formIsDirty = selectedInstruction ? !isSameForm(formState, selectedFormState) : JSON.stringify(formState) !== JSON.stringify(emptyFormState);
+  const hasUnsavedChanges = formIsDirty;
   const hasRecipientOptions = recipientOptions.length > 0;
   const canSave = selectedInstructionIsEditable && !saving && Boolean(formState.recipientPartyId && formState.instructedAmountText && invoice.lifecycleStatus !== "cancelled");
 
@@ -238,6 +240,20 @@ export function PaymentInstructionManagement({
     () => parties.find((party) => party.id === formState.recipientPartyId) ?? null,
     [formState.recipientPartyId, parties]
   );
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) {
+      return;
+    }
+
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => window.removeEventListener("beforeunload", beforeUnload);
+  }, [hasUnsavedChanges]);
 
   async function refresh(nextSelectionId?: string | null) {
     await loadData(nextSelectionId);
@@ -290,6 +306,7 @@ export function PaymentInstructionManagement({
         : await repository.createInstruction(parsedDraft);
 
       await refresh(savedInstruction.id);
+      window.dispatchEvent(new Event("tasviehyar-data-updated"));
       setNotice(selectedInstruction ? "دستور پرداخت با موفقیت به‌روزرسانی شد." : "دستور پرداخت جدید با موفقیت ثبت شد.");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "ذخیره‌سازی ناموفق بود.");
@@ -318,6 +335,7 @@ export function PaymentInstructionManagement({
         ? await repository.restoreInstruction(selectedInstruction.id)
         : await repository.cancelInstruction(selectedInstruction.id);
       await refresh(updatedInstruction.id);
+      window.dispatchEvent(new Event("tasviehyar-data-updated"));
       setNotice(nextActive ? "دستور پرداخت بازیابی شد." : "دستور پرداخت لغو شد.");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "عملیات ناموفق بود.");
@@ -403,27 +421,37 @@ export function PaymentInstructionManagement({
             </label>
 
             <div className="form-grid">
-              <label className="field">
-                <span>مبلغ دستور پرداخت</span>
+              <div className="field">
+                <label htmlFor="instruction-amount-input">
+                  <span>مبلغ دستور پرداخت</span>
+                </label>
                 <input
+                  id="instruction-amount-input"
                   required
                   value={formState.instructedAmountText}
                   disabled={!selectedInstructionIsEditable || invoice.lifecycleStatus === "cancelled"}
-                  onChange={(event) => setFormState((current) => ({ ...current, instructedAmountText: event.target.value }))}
+                  onChange={(event) =>
+                    setFormState((current) => ({ ...current, instructedAmountText: normalizeInvoiceAmountInputText(event.target.value) }))
+                  }
                   inputMode="numeric"
+                  dir="ltr"
                   placeholder="مثلا: 200000000"
                 />
-              </label>
+                <p className="field-hint">{draftCandidate ? formatPaymentInstructionAmount(draftCandidate.instructedAmount) : "مبلغ را به تومان وارد کنید."}</p>
+              </div>
 
-              <label className="field">
-                <span>توضیحات</span>
+              <div className="field">
+                <label htmlFor="instruction-note-input">
+                  <span>توضیحات</span>
+                </label>
                 <input
+                  id="instruction-note-input"
                   value={formState.note}
                   disabled={!selectedInstructionIsEditable || invoice.lifecycleStatus === "cancelled"}
                   onChange={(event) => setFormState((current) => ({ ...current, note: event.target.value }))}
                   placeholder="اختیاری"
                 />
-              </label>
+              </div>
             </div>
 
             <div className="summary-card" aria-label="پیش‌نمایش دستور">
@@ -582,18 +610,18 @@ export function PaymentInstructionManagement({
             </div>
             <div>
               <dt>فاکتور</dt>
-              <dd>{invoice.invoiceDate}</dd>
+              <dd>{formatInvoiceDate(invoice.invoiceDate)}</dd>
             </div>
           </dl>
 
           <div className="detail-grid">
             <div>
               <dt>ایجاد شده</dt>
-              <dd>{selectedInstruction.createdAt}</dd>
+              <dd>{formatInvoiceTimestamp(selectedInstruction.createdAt)}</dd>
             </div>
             <div>
               <dt>آخرین تغییر</dt>
-              <dd>{selectedInstruction.updatedAt}</dd>
+              <dd>{formatInvoiceTimestamp(selectedInstruction.updatedAt)}</dd>
             </div>
           </div>
         </section>

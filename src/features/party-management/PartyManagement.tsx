@@ -240,6 +240,7 @@ export function PartyManagement({
         : await repository.createParty(parsedDraft);
 
       await loadParties(savedParty.id);
+      window.dispatchEvent(new Event("tasviehyar-data-updated"));
       setNotice(selectedParty ? "تغییرات طرف با موفقیت ذخیره شد." : "طرف جدید با موفقیت ثبت شد.");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "ذخیره‌سازی ناموفق بود.");
@@ -263,6 +264,7 @@ export function PartyManagement({
         : await repository.archiveParty(selectedParty.id);
 
       await loadParties(updatedParty.id);
+      window.dispatchEvent(new Event("tasviehyar-data-updated"));
       setNotice(nextActive ? "طرف بازیابی شد." : "طرف بایگانی شد.");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "عملیات ناموفق بود.");
@@ -272,12 +274,20 @@ export function PartyManagement({
   }
 
   function selectParty(party: Party) {
+    if (party.id !== selectedPartyId && !requestDiscardChanges()) {
+      return;
+    }
+
     setSelectedPartyId(party.id);
     setNotice(null);
     setError(null);
   }
 
   function clearSelection() {
+    if (!requestDiscardChanges()) {
+      return;
+    }
+
     setSelectedPartyId(null);
     setFormState(defaultFormState);
     setNotice(null);
@@ -294,6 +304,29 @@ export function PartyManagement({
     formState.searchableDescription.trim().length > 0 ||
     formState.roles.length !== defaultFormState.roles.length ||
     formState.roles.some((role, index) => role !== defaultFormState.roles[index]);
+  const hasUnsavedChanges = formIsDirty;
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) {
+      return;
+    }
+
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => window.removeEventListener("beforeunload", beforeUnload);
+  }, [hasUnsavedChanges]);
+
+  function requestDiscardChanges(): boolean {
+    if (!hasUnsavedChanges) {
+      return true;
+    }
+
+    return window.confirm("تغییرات ذخیره‌نشده از بین می‌روند. ادامه می‌دهید؟");
+  }
 
   return (
     <section id="party-management" className="party-management" aria-labelledby="party-management-title">

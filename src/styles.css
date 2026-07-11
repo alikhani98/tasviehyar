@@ -92,6 +92,7 @@ h1 {
   font-weight: 700;
 }
 
+.app-navigation,
 .entry-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -129,6 +130,58 @@ h1 {
 .entry-meta {
   font-size: 0.98rem;
   color: #567067;
+}
+
+.app-navigation {
+  position: sticky;
+  top: 0.75rem;
+  z-index: 5;
+  padding: 0.25rem;
+  border-radius: 1.25rem;
+  background: rgba(244, 239, 230, 0.85);
+  backdrop-filter: blur(14px);
+}
+
+.home-panel,
+.pilot-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.home-action-grid,
+.pilot-grid {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+.home-action-card,
+.pilot-card {
+  width: 100%;
+  min-height: 7rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(24, 69, 59, 0.12);
+  background: rgba(255, 255, 255, 0.78);
+  padding: 1rem;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.home-action-card {
+  cursor: pointer;
+}
+
+.status-pill-online {
+  background: rgba(24, 69, 59, 0.12);
+  color: #124136;
+}
+
+.status-pill-offline {
+  background: rgba(181, 51, 51, 0.12);
+  color: #7f2b2b;
 }
 
 .principles-card {
@@ -250,6 +303,17 @@ h1 {
 .toolbar {
   display: grid;
   gap: 0.9rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.field-hint {
+  margin: 0;
+  font-size: 0.94rem;
+  color: #5d706a;
 }
 
 .reconciliation-toolbar {

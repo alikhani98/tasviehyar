@@ -1,6 +1,6 @@
 import packageJson from "../../package.json";
 import { ZodError } from "zod";
-import type { TasviehYarDatabase } from "../db/tasviehyar-db";
+import { TasviehYarDatabase, TASVIEHYAR_SCHEMA_VERSION } from "../db/tasviehyar-db";
 import type {
   BackupData,
   BackupEnvelope,
@@ -16,6 +16,7 @@ import {
   buildBackupRecordCounts,
   createBackupEnvelopeWithoutChecksum,
   createBackupFileName,
+  createDemoBackupFileName,
   digestBackupEnvelope,
   parseBackupEnvelope,
   validateBackupIntegrity
@@ -30,7 +31,7 @@ import type {
   PaymentVerification,
   Party
 } from "../domain";
-import { TASVIEHYAR_SCHEMA_VERSION } from "../db/tasviehyar-db";
+import { seedDemoBackupDatabase } from "./demo-backup";
 
 export interface BackupServiceDependencies {
   now?: () => string;
@@ -144,6 +145,30 @@ function appendHistoryEntry(storage: Storage | null, entry: BackupHistoryEntry):
   writeHistory(storage, nextEntries);
 }
 
+function createEphemeralStorage(): Storage {
+  const store = new Map<string, string>();
+  return {
+    get length() {
+      return store.size;
+    },
+    clear() {
+      store.clear();
+    },
+    getItem(key: string) {
+      return store.get(key) ?? null;
+    },
+    key(index: number) {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    removeItem(key: string) {
+      store.delete(key);
+    },
+    setItem(key: string, value: string) {
+      store.set(key, String(value));
+    }
+  } as Storage;
+}
+
 function compareRecordCounts(actual: BackupRecordCounts, expected: BackupRecordCounts): BackupIntegrityIssue[] {
   const fields: Array<keyof BackupRecordCounts> = [
     "parties",
@@ -232,29 +257,37 @@ export class BackupService {
 
   async exportBackup(): Promise<BackupExportResult> {
     const bundle = await readDatabaseBundle(this.database);
-    const data = mapBundleToData(bundle);
     const createdAt = this.now();
-    const envelopeWithoutChecksum = createBackupEnvelopeWithoutChecksum(data, {
-      createdAt,
-      databaseSchemaVersion: TASVIEHYAR_SCHEMA_VERSION,
-      ...(this.applicationVersion ? { applicationVersion: this.applicationVersion } : {})
-    });
-    const checksum = await digestBackupEnvelope(envelopeWithoutChecksum);
-    const envelope: BackupEnvelope = {
-      ...envelopeWithoutChecksum,
-      checksum
-    };
-    const issues = validateBackupIntegrity(data);
-    const preview = buildBackupPreview(envelope, issues);
+    const { envelope, preview, checksum, text } = await this.buildExportArtifacts(mapBundleToData(bundle), createdAt);
 
     appendHistoryEntry(this.storage, buildFileNameAndHistory(envelope, createdAt));
 
     return {
       filename: createBackupFileName(createdAt),
-      text: JSON.stringify(envelope, null, 2),
+      text,
       preview,
       checksum: checksum.value
     };
+  }
+
+  async exportDemoBackup(): Promise<BackupExportResult> {
+    const demoDatabase = new TasviehYarDatabase(`tasviehyar-demo-${crypto.randomUUID()}`);
+    try {
+      await seedDemoBackupDatabase(demoDatabase);
+      const createdAt = this.now();
+      const demoService = new BackupService(demoDatabase, {
+        now: () => createdAt,
+        storage: createEphemeralStorage(),
+        ...(this.applicationVersion ? { applicationVersion: this.applicationVersion } : {})
+      });
+      const result = await demoService.exportBackup();
+      return {
+        ...result,
+        filename: createDemoBackupFileName(createdAt)
+      };
+    } finally {
+      await demoDatabase.delete();
+    }
   }
 
   async getCurrentRecordCounts(): Promise<BackupRecordCounts> {
@@ -337,6 +370,30 @@ export class BackupService {
     return {
       envelope,
       preview: buildBackupPreview(envelope, issues)
+    };
+  }
+
+  private async buildExportArtifacts(
+    data: BackupData,
+    createdAt: string
+  ): Promise<{ envelope: BackupEnvelope; preview: BackupPreview; checksum: { value: string }; text: string }> {
+    const envelopeWithoutChecksum = createBackupEnvelopeWithoutChecksum(data, {
+      createdAt,
+      databaseSchemaVersion: TASVIEHYAR_SCHEMA_VERSION,
+      ...(this.applicationVersion ? { applicationVersion: this.applicationVersion } : {})
+    });
+    const checksum = await digestBackupEnvelope(envelopeWithoutChecksum);
+    const envelope: BackupEnvelope = {
+      ...envelopeWithoutChecksum,
+      checksum
+    };
+    const issues = validateBackupIntegrity(data);
+    const preview = buildBackupPreview(envelope, issues);
+    return {
+      envelope,
+      preview,
+      checksum,
+      text: JSON.stringify(envelope, null, 2)
     };
   }
 

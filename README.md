@@ -25,7 +25,7 @@ This repository is available for review and evaluation, but the software is not 
 - Audit history for important lifecycle changes
 - Clear warnings before destructive or high-risk actions
 
-## Implemented through Stage 9
+## Implemented through Stage 10
 
 - Party management with multiple roles
 - Destination accounts inside party details
@@ -36,6 +36,8 @@ This repository is available for review and evaluation, but the software is not 
 - Read-only operational reports
 - Excel export with CSV fallback for reports
 - Backup and restore with integrity checks
+- Unified visual design across the main workflows
+- Demo backup download for training and quick starts
 - Pilot-ready navigation and offline-friendly shell
 
 ## Technology
@@ -85,8 +87,11 @@ The application includes local backup and restore features for pilot safety.
 - Restore is replace-all, not merge
 - Restore validation happens before destructive writes
 - Backup files can contain sensitive financial information
+- The repo includes `demo/tasviehyar-demo-backup-v1.json`, a fictional sample backup for onboarding and quick-start demos
 
 Do not confuse report exports with backups. Excel and CSV report files are for analysis and review only and cannot be restored into TasviehYar.
+
+The backup screen also includes a demo backup download. It is a separate sample file for onboarding and demonstrations, not a replacement for the live local database.
 
 ## Reports and Excel export
 
@@ -123,6 +128,7 @@ The repository is organized by stage:
 - Stage 7: backup and restore safety
 - Stage 8: pilot readiness and UX polish
 - Stage 9: operational reports and Excel export
+- Stage 10: unified visual design and demo backup
 
 ## Contributing
 

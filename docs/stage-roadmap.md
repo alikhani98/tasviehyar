@@ -65,3 +65,9 @@
 - Date, party, lifecycle, and mismatch filters with printable views
 - Local Excel export with CSV fallback for the active report
 - Completed in the `stage-9-reports-excel-export` branch
+
+## Stage 10
+- Unified visual design and demo backup
+- One cohesive Persian RTL visual system across the main workflows
+- A safe demo backup download for training and quick-start demos
+- Completed in the `stage-10-design-demo-backup` branch

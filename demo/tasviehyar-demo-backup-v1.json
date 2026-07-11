@@ -1,0 +1,1041 @@
+{
+  "appIdentifier": "tasviehyar",
+  "backupFormatVersion": 1,
+  "databaseSchemaVersion": 3,
+  "createdAt": "2026-07-10T08:00:00.000Z",
+  "recordCounts": {
+    "parties": 6,
+    "destinationAccounts": 6,
+    "invoices": 5,
+    "paymentInstructions": 5,
+    "payments": 10,
+    "paymentAllocations": 7,
+    "paymentVerifications": 7,
+    "auditEvents": 51
+  },
+  "parties": [
+    {
+      "id": "party_01",
+      "displayName": "آقای زارع",
+      "aliases": [
+        "زارع"
+      ],
+      "searchableDescription": "مشتری نمایشی",
+      "roles": [
+        "customer"
+      ],
+      "phoneNumber": "09120000000",
+      "notes": "مشتری سناریوهای نمایشی",
+      "active": true,
+      "createdAt": "2026-07-10T08:00:00.000Z",
+      "updatedAt": "2026-07-10T08:00:00.000Z"
+    },
+    {
+      "id": "party_03",
+      "displayName": "آقای احمدی",
+      "aliases": [
+        "احمدی"
+      ],
+      "searchableDescription": "کشاورز و صاحب حساب مقصد",
+      "roles": [
+        "farmer",
+        "destination_account_owner"
+      ],
+      "phoneNumber": "09120000001",
+      "notes": "گیرنده چند حسابه",
+      "active": true,
+      "createdAt": "2026-07-10T08:01:00.000Z",
+      "updatedAt": "2026-07-10T08:01:00.000Z"
+    },
+    {
+      "id": "party_05",
+      "displayName": "آقای رضایی",
+      "aliases": [
+        "رضایی"
+      ],
+      "searchableDescription": "واسطه و صاحب حساب مقصد",
+      "roles": [
+        "broker",
+        "destination_account_owner"
+      ],
+      "phoneNumber": "09120000002",
+      "notes": "واسطه پایلوت",
+      "active": true,
+      "createdAt": "2026-07-10T08:02:00.000Z",
+      "updatedAt": "2026-07-10T08:02:00.000Z"
+    },
+    {
+      "id": "party_07",
+      "displayName": "حساب مجموعه علیخانی",
+      "aliases": [
+        "مجموعه علیخانی"
+      ],
+      "searchableDescription": "طرف داخلی کسب‌وکار",
+      "roles": [
+        "internal_business_party",
+        "destination_account_owner"
+      ],
+      "phoneNumber": "02100000000",
+      "notes": "حساب داخلی",
+      "active": true,
+      "createdAt": "2026-07-10T08:03:00.000Z",
+      "updatedAt": "2026-07-10T08:03:00.000Z"
+    },
+    {
+      "id": "party_09",
+      "displayName": "آقای بهرامی",
+      "aliases": [
+        "بهرامی"
+      ],
+      "searchableDescription": "مشتری آرشیوی",
+      "roles": [
+        "customer"
+      ],
+      "phoneNumber": "09120000003",
+      "notes": "برای نمونه بایگانی می‌شود",
+      "active": false,
+      "createdAt": "2026-07-10T08:04:00.000Z",
+      "updatedAt": "2026-07-10T08:19:00.000Z"
+    },
+    {
+      "id": "party_11",
+      "displayName": "آقای کریمی",
+      "aliases": [
+        "کریمی"
+      ],
+      "searchableDescription": "مشتری و کشاورز",
+      "roles": [
+        "customer",
+        "farmer",
+        "destination_account_owner"
+      ],
+      "phoneNumber": "09120000004",
+      "notes": "طرف چندنقشی",
+      "active": true,
+      "createdAt": "2026-07-10T08:05:00.000Z",
+      "updatedAt": "2026-07-10T08:05:00.000Z"
+    }
+  ],
+  "destinationAccounts": [
+    {
+      "id": "account_01",
+      "ownerPartyId": "party_03",
+      "accountLabel": "حساب اصلی",
+      "bankName": "بانک نمونه",
+      "cardNumber": "1234567890123456",
+      "active": true,
+      "createdAt": "2026-07-10T08:06:00.000Z",
+      "updatedAt": "2026-07-10T08:06:00.000Z"
+    },
+    {
+      "id": "account_03",
+      "ownerPartyId": "party_03",
+      "accountLabel": "حساب قدیمی",
+      "bankName": "بانک نمونه",
+      "iban": "IR126279601012345678901234",
+      "active": false,
+      "createdAt": "2026-07-10T08:07:00.000Z",
+      "updatedAt": "2026-07-10T08:12:00.000Z"
+    },
+    {
+      "id": "account_05",
+      "ownerPartyId": "party_05",
+      "accountLabel": "کارت کشاورزی",
+      "bankName": "بانک نمونه",
+      "iban": "IR505022291000000000000000",
+      "active": true,
+      "createdAt": "2026-07-10T08:08:00.000Z",
+      "updatedAt": "2026-07-10T08:08:00.000Z"
+    },
+    {
+      "id": "account_07",
+      "ownerPartyId": "party_07",
+      "accountLabel": "حساب تسویه داخلی",
+      "bankName": "بانک نمونه",
+      "bankAccountNumber": "1234567890123",
+      "active": true,
+      "createdAt": "2026-07-10T08:09:00.000Z",
+      "updatedAt": "2026-07-10T08:09:00.000Z"
+    },
+    {
+      "id": "account_09",
+      "ownerPartyId": "party_11",
+      "accountLabel": "حساب اصلی",
+      "bankName": "بانک نمونه",
+      "cardNumber": "6379583729014826",
+      "active": true,
+      "createdAt": "2026-07-10T08:10:00.000Z",
+      "updatedAt": "2026-07-10T08:10:00.000Z"
+    },
+    {
+      "id": "account_11",
+      "ownerPartyId": "party_11",
+      "accountLabel": "حساب ذخیره",
+      "bankName": "بانک نمونه",
+      "bankAccountNumber": "9876543210",
+      "active": true,
+      "createdAt": "2026-07-10T08:11:00.000Z",
+      "updatedAt": "2026-07-10T08:11:00.000Z"
+    }
+  ],
+  "invoices": [
+    {
+      "id": "invoice_01",
+      "customerPartyId": "party_01",
+      "invoiceDate": "2026-07-01",
+      "referenceNumber": "ف-زارع-01",
+      "totalAmount": 1500000000,
+      "note": "سناریوی اصلی",
+      "lifecycleStatus": "active",
+      "createdAt": "2026-07-10T08:13:00.000Z",
+      "updatedAt": "2026-07-10T08:13:00.000Z"
+    },
+    {
+      "id": "invoice_03",
+      "customerPartyId": "party_11",
+      "invoiceDate": "2026-07-02",
+      "referenceNumber": "ف-کریمی-01",
+      "totalAmount": 240000000,
+      "note": "تسویه کامل",
+      "lifecycleStatus": "active",
+      "createdAt": "2026-07-10T08:14:00.000Z",
+      "updatedAt": "2026-07-10T08:14:00.000Z"
+    },
+    {
+      "id": "invoice_05",
+      "customerPartyId": "party_01",
+      "invoiceDate": "2026-07-03",
+      "referenceNumber": "ف-زارع-02",
+      "totalAmount": 130000000,
+      "note": "دستور بدون حساب مقصد",
+      "lifecycleStatus": "active",
+      "createdAt": "2026-07-10T08:15:00.000Z",
+      "updatedAt": "2026-07-10T08:15:00.000Z"
+    },
+    {
+      "id": "invoice_07",
+      "customerPartyId": "party_01",
+      "invoiceDate": "2026-07-04",
+      "referenceNumber": "ف-زارع-03",
+      "totalAmount": 200000000,
+      "note": "بیش‌پرداخت دستور",
+      "lifecycleStatus": "active",
+      "createdAt": "2026-07-10T08:16:00.000Z",
+      "updatedAt": "2026-07-10T08:16:00.000Z"
+    },
+    {
+      "id": "invoice_09",
+      "customerPartyId": "party_09",
+      "invoiceDate": "2026-07-05",
+      "referenceNumber": "ف-بهرامی-01",
+      "totalAmount": 70000000,
+      "note": "فاکتور آرشیوی",
+      "lifecycleStatus": "cancelled",
+      "createdAt": "2026-07-10T08:17:00.000Z",
+      "updatedAt": "2026-07-10T08:18:00.000Z"
+    }
+  ],
+  "paymentInstructions": [
+    {
+      "id": "instruction_01",
+      "invoiceId": "invoice_01",
+      "recipientPartyId": "party_03",
+      "destinationAccountId": "account_01",
+      "instructedAmount": 200000000,
+      "note": "دستور احمدی",
+      "lifecycleStatus": "active",
+      "createdAt": "2026-07-10T08:20:00.000Z",
+      "updatedAt": "2026-07-10T08:20:00.000Z"
+    },
+    {
+      "id": "instruction_03",
+      "invoiceId": "invoice_01",
+      "recipientPartyId": "party_05",
+      "destinationAccountId": "account_05",
+      "instructedAmount": 300000000,
+      "note": "دستور رضایی",
+      "lifecycleStatus": "active",
+      "createdAt": "2026-07-10T08:21:00.000Z",
+      "updatedAt": "2026-07-10T08:21:00.000Z"
+    },
+    {
+      "id": "instruction_05",
+      "invoiceId": "invoice_03",
+      "recipientPartyId": "party_03",
+      "destinationAccountId": "account_01",
+      "instructedAmount": 240000000,
+      "note": "تکمیل شده",
+      "lifecycleStatus": "active",
+      "createdAt": "2026-07-10T08:22:00.000Z",
+      "updatedAt": "2026-07-10T08:22:00.000Z"
+    },
+    {
+      "id": "instruction_07",
+      "invoiceId": "invoice_05",
+      "recipientPartyId": "party_11",
+      "instructedAmount": 40000000,
+      "note": "حساب مقصد بعدا تعیین می‌شود",
+      "lifecycleStatus": "active",
+      "createdAt": "2026-07-10T08:23:00.000Z",
+      "updatedAt": "2026-07-10T08:23:00.000Z"
+    },
+    {
+      "id": "instruction_09",
+      "invoiceId": "invoice_07",
+      "recipientPartyId": "party_03",
+      "destinationAccountId": "account_01",
+      "instructedAmount": 100000000,
+      "note": "دستور بیش‌پرداخت",
+      "lifecycleStatus": "active",
+      "createdAt": "2026-07-10T08:24:00.000Z",
+      "updatedAt": "2026-07-10T08:24:00.000Z"
+    }
+  ],
+  "payments": [
+    {
+      "id": "payment_01",
+      "payerPartyId": "party_01",
+      "recipientPartyId": "party_03",
+      "amount": 50000000,
+      "paymentDate": "2026-07-06",
+      "paymentMethod": "bank_transfer",
+      "lifecycleStatus": "active",
+      "verificationStatus": "confirmed",
+      "trackingReference": "trkahmadi01",
+      "destinationAccountId": "account_01",
+      "note": "پرداخت نخست",
+      "createdAt": "2026-07-10T08:25:00.000Z",
+      "updatedAt": "2026-07-10T08:25:00.000Z"
+    },
+    {
+      "id": "payment_07",
+      "payerPartyId": "party_01",
+      "recipientPartyId": "party_03",
+      "amount": 30000000,
+      "paymentDate": "2026-07-06",
+      "paymentMethod": "bank_transfer",
+      "lifecycleStatus": "active",
+      "verificationStatus": "reported",
+      "trackingReference": "trkahmadi02",
+      "destinationAccountId": "account_01",
+      "note": "پرداخت اعلام‌شده",
+      "createdAt": "2026-07-10T08:26:00.000Z",
+      "updatedAt": "2026-07-10T08:26:00.000Z"
+    },
+    {
+      "id": "payment_11",
+      "payerPartyId": "party_01",
+      "recipientPartyId": "party_03",
+      "amount": 100000000,
+      "paymentDate": "2026-07-06",
+      "paymentMethod": "bank_transfer",
+      "lifecycleStatus": "active",
+      "verificationStatus": "confirmed",
+      "trackingReference": "trkahmadi03",
+      "destinationAccountId": "account_01",
+      "note": "پرداخت دوم",
+      "createdAt": "2026-07-10T08:27:00.000Z",
+      "updatedAt": "2026-07-10T08:27:00.000Z"
+    },
+    {
+      "id": "payment_17",
+      "payerPartyId": "party_01",
+      "recipientPartyId": "party_03",
+      "amount": 20000000,
+      "paymentDate": "2026-07-06",
+      "paymentMethod": "bank_transfer",
+      "lifecycleStatus": "active",
+      "verificationStatus": "confirmed",
+      "trackingReference": "trkahmadi04",
+      "destinationAccountId": "account_01",
+      "note": "پرداخت سوم",
+      "createdAt": "2026-07-10T08:28:00.000Z",
+      "updatedAt": "2026-07-10T08:28:00.000Z"
+    },
+    {
+      "id": "payment_23",
+      "payerPartyId": "party_11",
+      "recipientPartyId": "party_03",
+      "amount": 240000000,
+      "paymentDate": "2026-07-07",
+      "paymentMethod": "bank_transfer",
+      "lifecycleStatus": "active",
+      "verificationStatus": "confirmed",
+      "trackingReference": "trkkarimi01",
+      "destinationAccountId": "account_01",
+      "note": "پرداخت تکمیل‌شونده",
+      "createdAt": "2026-07-10T08:29:00.000Z",
+      "updatedAt": "2026-07-10T08:30:00.000Z"
+    },
+    {
+      "id": "payment_30",
+      "payerPartyId": "party_01",
+      "recipientPartyId": "party_03",
+      "amount": 80000000,
+      "paymentDate": "2026-07-08",
+      "paymentMethod": "bank_transfer",
+      "lifecycleStatus": "active",
+      "verificationStatus": "confirmed",
+      "trackingReference": "trkoverpay01",
+      "destinationAccountId": "account_01",
+      "note": "بخش اول بیش‌پرداخت",
+      "createdAt": "2026-07-10T08:31:00.000Z",
+      "updatedAt": "2026-07-10T08:31:00.000Z"
+    },
+    {
+      "id": "payment_36",
+      "payerPartyId": "party_01",
+      "recipientPartyId": "party_03",
+      "amount": 60000000,
+      "paymentDate": "2026-07-08",
+      "paymentMethod": "bank_transfer",
+      "lifecycleStatus": "active",
+      "verificationStatus": "confirmed",
+      "trackingReference": "trkoverpay02",
+      "destinationAccountId": "account_01",
+      "note": "بخش دوم بیش‌پرداخت",
+      "createdAt": "2026-07-10T08:32:00.000Z",
+      "updatedAt": "2026-07-10T08:32:00.000Z"
+    },
+    {
+      "id": "payment_42",
+      "payerPartyId": "party_01",
+      "recipientPartyId": "party_07",
+      "amount": 25000000,
+      "paymentDate": "2026-07-09",
+      "paymentMethod": "bank_transfer",
+      "lifecycleStatus": "active",
+      "verificationStatus": "reported",
+      "trackingReference": "trkreview01",
+      "destinationAccountId": "account_07",
+      "note": "پرداخت بدون تخصیص",
+      "createdAt": "2026-07-10T08:33:00.000Z",
+      "updatedAt": "2026-07-10T08:33:00.000Z"
+    },
+    {
+      "id": "payment_44",
+      "payerPartyId": "party_01",
+      "recipientPartyId": "party_07",
+      "amount": 35000000,
+      "paymentDate": "2026-07-09",
+      "paymentMethod": "bank_transfer",
+      "lifecycleStatus": "active",
+      "verificationStatus": "disputed",
+      "trackingReference": "trkreview01",
+      "destinationAccountId": "account_07",
+      "note": "پرداخت مورد اختلاف",
+      "createdAt": "2026-07-10T08:34:00.000Z",
+      "updatedAt": "2026-07-10T08:34:00.000Z"
+    },
+    {
+      "id": "payment_48",
+      "payerPartyId": "party_01",
+      "recipientPartyId": "party_03",
+      "amount": 12000000,
+      "paymentDate": "2026-07-09",
+      "paymentMethod": "bank_transfer",
+      "lifecycleStatus": "cancelled",
+      "verificationStatus": "reported",
+      "trackingReference": "trkcancel01",
+      "destinationAccountId": "account_01",
+      "note": "پرداخت لغوشده",
+      "createdAt": "2026-07-10T08:35:00.000Z",
+      "updatedAt": "2026-07-10T08:36:00.000Z"
+    }
+  ],
+  "paymentAllocations": [
+    {
+      "id": "payment_03",
+      "paymentId": "payment_01",
+      "invoiceId": "invoice_01",
+      "paymentInstructionId": "instruction_01",
+      "allocatedAmount": 50000000,
+      "createdAt": "2026-07-10T08:25:00.000Z"
+    },
+    {
+      "id": "payment_09",
+      "paymentId": "payment_07",
+      "invoiceId": "invoice_01",
+      "paymentInstructionId": "instruction_01",
+      "allocatedAmount": 30000000,
+      "createdAt": "2026-07-10T08:26:00.000Z"
+    },
+    {
+      "id": "payment_13",
+      "paymentId": "payment_11",
+      "invoiceId": "invoice_01",
+      "paymentInstructionId": "instruction_01",
+      "allocatedAmount": 100000000,
+      "createdAt": "2026-07-10T08:27:00.000Z"
+    },
+    {
+      "id": "payment_19",
+      "paymentId": "payment_17",
+      "invoiceId": "invoice_01",
+      "paymentInstructionId": "instruction_01",
+      "allocatedAmount": 20000000,
+      "createdAt": "2026-07-10T08:28:00.000Z"
+    },
+    {
+      "id": "payment_25",
+      "paymentId": "payment_23",
+      "invoiceId": "invoice_03",
+      "paymentInstructionId": "instruction_05",
+      "allocatedAmount": 240000000,
+      "createdAt": "2026-07-10T08:29:00.000Z"
+    },
+    {
+      "id": "payment_32",
+      "paymentId": "payment_30",
+      "invoiceId": "invoice_07",
+      "paymentInstructionId": "instruction_09",
+      "allocatedAmount": 80000000,
+      "createdAt": "2026-07-10T08:31:00.000Z"
+    },
+    {
+      "id": "payment_38",
+      "paymentId": "payment_36",
+      "invoiceId": "invoice_07",
+      "paymentInstructionId": "instruction_09",
+      "allocatedAmount": 60000000,
+      "createdAt": "2026-07-10T08:32:00.000Z"
+    }
+  ],
+  "paymentVerifications": [
+    {
+      "id": "payment_05",
+      "paymentId": "payment_01",
+      "verificationResult": "confirmed",
+      "verifierDescriptionOrPartyRef": "ثبت اولیه",
+      "verificationMethod": "other",
+      "verifiedAt": "2026-07-10T08:25:00.000Z",
+      "createdAt": "2026-07-10T08:25:00.000Z"
+    },
+    {
+      "id": "payment_15",
+      "paymentId": "payment_11",
+      "verificationResult": "confirmed",
+      "verifierDescriptionOrPartyRef": "ثبت اولیه",
+      "verificationMethod": "other",
+      "verifiedAt": "2026-07-10T08:27:00.000Z",
+      "createdAt": "2026-07-10T08:27:00.000Z"
+    },
+    {
+      "id": "payment_21",
+      "paymentId": "payment_17",
+      "verificationResult": "confirmed",
+      "verifierDescriptionOrPartyRef": "ثبت اولیه",
+      "verificationMethod": "other",
+      "verifiedAt": "2026-07-10T08:28:00.000Z",
+      "createdAt": "2026-07-10T08:28:00.000Z"
+    },
+    {
+      "id": "payment_27",
+      "paymentId": "payment_23",
+      "verificationResult": "confirmed",
+      "verifierDescriptionOrPartyRef": "اپراتور نمایشی",
+      "verificationMethod": "receipt_review",
+      "note": "تأیید پس از ثبت اولیه",
+      "verifiedAt": "2026-07-10T08:30:00.000Z",
+      "createdAt": "2026-07-10T08:30:00.000Z"
+    },
+    {
+      "id": "payment_34",
+      "paymentId": "payment_30",
+      "verificationResult": "confirmed",
+      "verifierDescriptionOrPartyRef": "ثبت اولیه",
+      "verificationMethod": "other",
+      "verifiedAt": "2026-07-10T08:31:00.000Z",
+      "createdAt": "2026-07-10T08:31:00.000Z"
+    },
+    {
+      "id": "payment_40",
+      "paymentId": "payment_36",
+      "verificationResult": "confirmed",
+      "verifierDescriptionOrPartyRef": "ثبت اولیه",
+      "verificationMethod": "other",
+      "verifiedAt": "2026-07-10T08:32:00.000Z",
+      "createdAt": "2026-07-10T08:32:00.000Z"
+    },
+    {
+      "id": "payment_46",
+      "paymentId": "payment_44",
+      "verificationResult": "disputed",
+      "verifierDescriptionOrPartyRef": "ثبت اولیه",
+      "verificationMethod": "other",
+      "verifiedAt": "2026-07-10T08:34:00.000Z",
+      "createdAt": "2026-07-10T08:34:00.000Z"
+    }
+  ],
+  "auditEvents": [
+    {
+      "id": "account_02",
+      "entityType": "destination_account",
+      "entityId": "account_01",
+      "action": "created",
+      "description": "حساب مقصد «حساب اصلی» برای طرف «آقای احمدی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:06:00.000Z"
+    },
+    {
+      "id": "account_04",
+      "entityType": "destination_account",
+      "entityId": "account_03",
+      "action": "created",
+      "description": "حساب مقصد «حساب قدیمی» برای طرف «آقای احمدی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:07:00.000Z"
+    },
+    {
+      "id": "account_06",
+      "entityType": "destination_account",
+      "entityId": "account_05",
+      "action": "created",
+      "description": "حساب مقصد «کارت کشاورزی» برای طرف «آقای رضایی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:08:00.000Z"
+    },
+    {
+      "id": "account_08",
+      "entityType": "destination_account",
+      "entityId": "account_07",
+      "action": "created",
+      "description": "حساب مقصد «حساب تسویه داخلی» برای طرف «حساب مجموعه علیخانی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:09:00.000Z"
+    },
+    {
+      "id": "account_10",
+      "entityType": "destination_account",
+      "entityId": "account_09",
+      "action": "created",
+      "description": "حساب مقصد «حساب اصلی» برای طرف «آقای کریمی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:10:00.000Z"
+    },
+    {
+      "id": "account_12",
+      "entityType": "destination_account",
+      "entityId": "account_11",
+      "action": "created",
+      "description": "حساب مقصد «حساب ذخیره» برای طرف «آقای کریمی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:11:00.000Z"
+    },
+    {
+      "id": "account_13",
+      "entityType": "destination_account",
+      "entityId": "account_03",
+      "action": "archived",
+      "description": "حساب مقصد «حساب قدیمی» برای طرف «آقای احمدی» بایگانی شد.",
+      "previousStatus": "active",
+      "nextStatus": "archived",
+      "createdAt": "2026-07-10T08:12:00.000Z"
+    },
+    {
+      "id": "instruction_02",
+      "entityType": "payment_instruction",
+      "entityId": "instruction_01",
+      "action": "created",
+      "description": "دستور پرداخت برای «آقای احمدی» در فاکتور invoice_01 با مبلغ ۲۰۰٬۰۰۰٬۰۰۰ تومان، حساب «حساب اصلی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:20:00.000Z"
+    },
+    {
+      "id": "instruction_04",
+      "entityType": "payment_instruction",
+      "entityId": "instruction_03",
+      "action": "created",
+      "description": "دستور پرداخت برای «آقای رضایی» در فاکتور invoice_01 با مبلغ ۳۰۰٬۰۰۰٬۰۰۰ تومان، حساب «کارت کشاورزی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:21:00.000Z"
+    },
+    {
+      "id": "instruction_06",
+      "entityType": "payment_instruction",
+      "entityId": "instruction_05",
+      "action": "created",
+      "description": "دستور پرداخت برای «آقای احمدی» در فاکتور invoice_03 با مبلغ ۲۴۰٬۰۰۰٬۰۰۰ تومان، حساب «حساب اصلی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:22:00.000Z"
+    },
+    {
+      "id": "instruction_08",
+      "entityType": "payment_instruction",
+      "entityId": "instruction_07",
+      "action": "created",
+      "description": "دستور پرداخت برای «آقای کریمی» در فاکتور invoice_05 با مبلغ ۴۰٬۰۰۰٬۰۰۰ تومان، حساب هنوز تعیین نشده ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:23:00.000Z"
+    },
+    {
+      "id": "instruction_10",
+      "entityType": "payment_instruction",
+      "entityId": "instruction_09",
+      "action": "created",
+      "description": "دستور پرداخت برای «آقای احمدی» در فاکتور invoice_07 با مبلغ ۱۰۰٬۰۰۰٬۰۰۰ تومان، حساب «حساب اصلی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:24:00.000Z"
+    },
+    {
+      "id": "invoice_02",
+      "entityType": "invoice",
+      "entityId": "invoice_01",
+      "action": "created",
+      "description": "فاکتور مشتری «آقای زارع» در تاریخ 2026-07-01 با مبلغ ۱٬۵۰۰٬۰۰۰٬۰۰۰ تومان، شماره/عنوان «ف-زارع-01» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:13:00.000Z"
+    },
+    {
+      "id": "invoice_04",
+      "entityType": "invoice",
+      "entityId": "invoice_03",
+      "action": "created",
+      "description": "فاکتور مشتری «آقای کریمی» در تاریخ 2026-07-02 با مبلغ ۲۴۰٬۰۰۰٬۰۰۰ تومان، شماره/عنوان «ف-کریمی-01» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:14:00.000Z"
+    },
+    {
+      "id": "invoice_06",
+      "entityType": "invoice",
+      "entityId": "invoice_05",
+      "action": "created",
+      "description": "فاکتور مشتری «آقای زارع» در تاریخ 2026-07-03 با مبلغ ۱۳۰٬۰۰۰٬۰۰۰ تومان، شماره/عنوان «ف-زارع-02» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:15:00.000Z"
+    },
+    {
+      "id": "invoice_08",
+      "entityType": "invoice",
+      "entityId": "invoice_07",
+      "action": "created",
+      "description": "فاکتور مشتری «آقای زارع» در تاریخ 2026-07-04 با مبلغ ۲۰۰٬۰۰۰٬۰۰۰ تومان، شماره/عنوان «ف-زارع-03» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:16:00.000Z"
+    },
+    {
+      "id": "invoice_10",
+      "entityType": "invoice",
+      "entityId": "invoice_09",
+      "action": "created",
+      "description": "فاکتور مشتری «آقای بهرامی» در تاریخ 2026-07-05 با مبلغ ۷۰٬۰۰۰٬۰۰۰ تومان، شماره/عنوان «ف-بهرامی-01» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:17:00.000Z"
+    },
+    {
+      "id": "invoice_11",
+      "entityType": "invoice",
+      "entityId": "invoice_09",
+      "action": "cancelled",
+      "description": "فاکتور مشتری «آقای بهرامی» در تاریخ 2026-07-05 با مبلغ ۷۰٬۰۰۰٬۰۰۰ تومان، شماره/عنوان «ف-بهرامی-01» لغو شد.",
+      "previousStatus": "active",
+      "nextStatus": "cancelled",
+      "createdAt": "2026-07-10T08:18:00.000Z"
+    },
+    {
+      "id": "party_02",
+      "entityType": "party",
+      "entityId": "party_01",
+      "action": "created",
+      "description": "طرف «آقای زارع» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:00:00.000Z"
+    },
+    {
+      "id": "party_04",
+      "entityType": "party",
+      "entityId": "party_03",
+      "action": "created",
+      "description": "طرف «آقای احمدی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:01:00.000Z"
+    },
+    {
+      "id": "party_06",
+      "entityType": "party",
+      "entityId": "party_05",
+      "action": "created",
+      "description": "طرف «آقای رضایی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:02:00.000Z"
+    },
+    {
+      "id": "party_08",
+      "entityType": "party",
+      "entityId": "party_07",
+      "action": "created",
+      "description": "طرف «حساب مجموعه علیخانی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:03:00.000Z"
+    },
+    {
+      "id": "party_10",
+      "entityType": "party",
+      "entityId": "party_09",
+      "action": "created",
+      "description": "طرف «آقای بهرامی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:04:00.000Z"
+    },
+    {
+      "id": "party_12",
+      "entityType": "party",
+      "entityId": "party_11",
+      "action": "created",
+      "description": "طرف «آقای کریمی» ایجاد شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:05:00.000Z"
+    },
+    {
+      "id": "party_13",
+      "entityType": "party",
+      "entityId": "party_09",
+      "action": "archived",
+      "description": "طرف «آقای بهرامی» بایگانی شد.",
+      "previousStatus": "active",
+      "nextStatus": "archived",
+      "createdAt": "2026-07-10T08:19:00.000Z"
+    },
+    {
+      "id": "payment_02",
+      "entityType": "payment",
+      "entityId": "payment_01",
+      "action": "created",
+      "description": "پرداخت ۵۰٬۰۰۰٬۰۰۰ تومان از «آقای زارع» به «آقای احمدی» در تاریخ 2026-07-06، حساب «حساب اصلی» ثبت شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:25:00.000Z"
+    },
+    {
+      "id": "payment_04",
+      "entityType": "payment_allocation",
+      "entityId": "payment_03",
+      "action": "created",
+      "description": "تخصیص پرداخت به فاکتور «ف-زارع-01»، دستور «instruction_01» با مبلغ ۵۰٬۰۰۰٬۰۰۰ تومان ثبت شد.",
+      "createdAt": "2026-07-10T08:25:00.000Z"
+    },
+    {
+      "id": "payment_06",
+      "entityType": "payment_verification",
+      "entityId": "payment_01",
+      "action": "verified",
+      "description": "پرداخت payment_01 با نتیجه «confirmed» و روش «other» ثبت شد.",
+      "previousStatus": "confirmed",
+      "nextStatus": "confirmed",
+      "createdAt": "2026-07-10T08:25:00.000Z"
+    },
+    {
+      "id": "payment_08",
+      "entityType": "payment",
+      "entityId": "payment_07",
+      "action": "created",
+      "description": "پرداخت ۳۰٬۰۰۰٬۰۰۰ تومان از «آقای زارع» به «آقای احمدی» در تاریخ 2026-07-06، حساب «حساب اصلی» ثبت شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:26:00.000Z"
+    },
+    {
+      "id": "payment_10",
+      "entityType": "payment_allocation",
+      "entityId": "payment_09",
+      "action": "created",
+      "description": "تخصیص پرداخت به فاکتور «ف-زارع-01»، دستور «instruction_01» با مبلغ ۳۰٬۰۰۰٬۰۰۰ تومان ثبت شد.",
+      "createdAt": "2026-07-10T08:26:00.000Z"
+    },
+    {
+      "id": "payment_12",
+      "entityType": "payment",
+      "entityId": "payment_11",
+      "action": "created",
+      "description": "پرداخت ۱۰۰٬۰۰۰٬۰۰۰ تومان از «آقای زارع» به «آقای احمدی» در تاریخ 2026-07-06، حساب «حساب اصلی» ثبت شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:27:00.000Z"
+    },
+    {
+      "id": "payment_14",
+      "entityType": "payment_allocation",
+      "entityId": "payment_13",
+      "action": "created",
+      "description": "تخصیص پرداخت به فاکتور «ف-زارع-01»، دستور «instruction_01» با مبلغ ۱۰۰٬۰۰۰٬۰۰۰ تومان ثبت شد.",
+      "createdAt": "2026-07-10T08:27:00.000Z"
+    },
+    {
+      "id": "payment_16",
+      "entityType": "payment_verification",
+      "entityId": "payment_11",
+      "action": "verified",
+      "description": "پرداخت payment_11 با نتیجه «confirmed» و روش «other» ثبت شد.",
+      "previousStatus": "confirmed",
+      "nextStatus": "confirmed",
+      "createdAt": "2026-07-10T08:27:00.000Z"
+    },
+    {
+      "id": "payment_18",
+      "entityType": "payment",
+      "entityId": "payment_17",
+      "action": "created",
+      "description": "پرداخت ۲۰٬۰۰۰٬۰۰۰ تومان از «آقای زارع» به «آقای احمدی» در تاریخ 2026-07-06، حساب «حساب اصلی» ثبت شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:28:00.000Z"
+    },
+    {
+      "id": "payment_20",
+      "entityType": "payment_allocation",
+      "entityId": "payment_19",
+      "action": "created",
+      "description": "تخصیص پرداخت به فاکتور «ف-زارع-01»، دستور «instruction_01» با مبلغ ۲۰٬۰۰۰٬۰۰۰ تومان ثبت شد.",
+      "createdAt": "2026-07-10T08:28:00.000Z"
+    },
+    {
+      "id": "payment_22",
+      "entityType": "payment_verification",
+      "entityId": "payment_17",
+      "action": "verified",
+      "description": "پرداخت payment_17 با نتیجه «confirmed» و روش «other» ثبت شد.",
+      "previousStatus": "confirmed",
+      "nextStatus": "confirmed",
+      "createdAt": "2026-07-10T08:28:00.000Z"
+    },
+    {
+      "id": "payment_24",
+      "entityType": "payment",
+      "entityId": "payment_23",
+      "action": "created",
+      "description": "پرداخت ۲۴۰٬۰۰۰٬۰۰۰ تومان از «آقای کریمی» به «آقای احمدی» در تاریخ 2026-07-07، حساب «حساب اصلی» ثبت شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:29:00.000Z"
+    },
+    {
+      "id": "payment_26",
+      "entityType": "payment_allocation",
+      "entityId": "payment_25",
+      "action": "created",
+      "description": "تخصیص پرداخت به فاکتور «ف-کریمی-01»، دستور «instruction_05» با مبلغ ۲۴۰٬۰۰۰٬۰۰۰ تومان ثبت شد.",
+      "createdAt": "2026-07-10T08:29:00.000Z"
+    },
+    {
+      "id": "payment_28",
+      "entityType": "payment",
+      "entityId": "payment_23",
+      "action": "updated",
+      "description": "پرداخت ۲۴۰٬۰۰۰٬۰۰۰ تومان از «آقای کریمی» به «آقای احمدی» در تاریخ 2026-07-07، حساب «حساب اصلی» ویرایش شد.",
+      "previousStatus": "active",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:30:00.000Z"
+    },
+    {
+      "id": "payment_29",
+      "entityType": "payment_verification",
+      "entityId": "payment_23",
+      "action": "verified",
+      "description": "پرداخت payment_23 با نتیجه «confirmed» و روش «receipt_review» ثبت شد.",
+      "previousStatus": "confirmed",
+      "nextStatus": "confirmed",
+      "createdAt": "2026-07-10T08:30:00.000Z"
+    },
+    {
+      "id": "payment_31",
+      "entityType": "payment",
+      "entityId": "payment_30",
+      "action": "created",
+      "description": "پرداخت ۸۰٬۰۰۰٬۰۰۰ تومان از «آقای زارع» به «آقای احمدی» در تاریخ 2026-07-08، حساب «حساب اصلی» ثبت شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:31:00.000Z"
+    },
+    {
+      "id": "payment_33",
+      "entityType": "payment_allocation",
+      "entityId": "payment_32",
+      "action": "created",
+      "description": "تخصیص پرداخت به فاکتور «ف-زارع-03»، دستور «instruction_09» با مبلغ ۸۰٬۰۰۰٬۰۰۰ تومان ثبت شد.",
+      "createdAt": "2026-07-10T08:31:00.000Z"
+    },
+    {
+      "id": "payment_35",
+      "entityType": "payment_verification",
+      "entityId": "payment_30",
+      "action": "verified",
+      "description": "پرداخت payment_30 با نتیجه «confirmed» و روش «other» ثبت شد.",
+      "previousStatus": "confirmed",
+      "nextStatus": "confirmed",
+      "createdAt": "2026-07-10T08:31:00.000Z"
+    },
+    {
+      "id": "payment_37",
+      "entityType": "payment",
+      "entityId": "payment_36",
+      "action": "created",
+      "description": "پرداخت ۶۰٬۰۰۰٬۰۰۰ تومان از «آقای زارع» به «آقای احمدی» در تاریخ 2026-07-08، حساب «حساب اصلی» ثبت شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:32:00.000Z"
+    },
+    {
+      "id": "payment_39",
+      "entityType": "payment_allocation",
+      "entityId": "payment_38",
+      "action": "created",
+      "description": "تخصیص پرداخت به فاکتور «ف-زارع-03»، دستور «instruction_09» با مبلغ ۶۰٬۰۰۰٬۰۰۰ تومان ثبت شد.",
+      "createdAt": "2026-07-10T08:32:00.000Z"
+    },
+    {
+      "id": "payment_41",
+      "entityType": "payment_verification",
+      "entityId": "payment_36",
+      "action": "verified",
+      "description": "پرداخت payment_36 با نتیجه «confirmed» و روش «other» ثبت شد.",
+      "previousStatus": "confirmed",
+      "nextStatus": "confirmed",
+      "createdAt": "2026-07-10T08:32:00.000Z"
+    },
+    {
+      "id": "payment_43",
+      "entityType": "payment",
+      "entityId": "payment_42",
+      "action": "created",
+      "description": "پرداخت ۲۵٬۰۰۰٬۰۰۰ تومان از «آقای زارع» به «حساب مجموعه علیخانی» در تاریخ 2026-07-09، حساب «حساب تسویه داخلی» ثبت شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:33:00.000Z"
+    },
+    {
+      "id": "payment_45",
+      "entityType": "payment",
+      "entityId": "payment_44",
+      "action": "created",
+      "description": "پرداخت ۳۵٬۰۰۰٬۰۰۰ تومان از «آقای زارع» به «حساب مجموعه علیخانی» در تاریخ 2026-07-09، حساب «حساب تسویه داخلی» ثبت شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:34:00.000Z"
+    },
+    {
+      "id": "payment_47",
+      "entityType": "payment_verification",
+      "entityId": "payment_44",
+      "action": "verified",
+      "description": "پرداخت payment_44 با نتیجه «disputed» و روش «other» ثبت شد.",
+      "previousStatus": "disputed",
+      "nextStatus": "disputed",
+      "createdAt": "2026-07-10T08:34:00.000Z"
+    },
+    {
+      "id": "payment_49",
+      "entityType": "payment",
+      "entityId": "payment_48",
+      "action": "created",
+      "description": "پرداخت ۱۲٬۰۰۰٬۰۰۰ تومان از «آقای زارع» به «آقای احمدی» در تاریخ 2026-07-09، حساب «حساب اصلی» ثبت شد.",
+      "nextStatus": "active",
+      "createdAt": "2026-07-10T08:35:00.000Z"
+    },
+    {
+      "id": "payment_50",
+      "entityType": "payment",
+      "entityId": "payment_48",
+      "action": "cancelled",
+      "description": "پرداخت ۱۲٬۰۰۰٬۰۰۰ تومان از «آقای زارع» به «آقای احمدی» در تاریخ 2026-07-09، حساب «حساب اصلی» لغو شد.",
+      "previousStatus": "active",
+      "nextStatus": "cancelled",
+      "createdAt": "2026-07-10T08:36:00.000Z"
+    }
+  ],
+  "applicationVersion": "0.9.0-alpha.0",
+  "checksum": {
+    "algorithm": "SHA-256",
+    "value": "d3c33efa79bc6c57285ce5fb2fed05560666757c1030da409522efd39660508c"
+  }
+}

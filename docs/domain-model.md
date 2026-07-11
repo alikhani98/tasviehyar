@@ -23,3 +23,6 @@ Stores the verification method and result for a payment as append-only history.
 
 ## AuditEvent
 Records creation, cancellation, reversal, status changes, and corrections so history is not silently overwritten.
+
+## BackupEnvelope
+Stores a local-file snapshot of the application tables with metadata, counts, and checksum information so the app can validate and restore the local database safely.

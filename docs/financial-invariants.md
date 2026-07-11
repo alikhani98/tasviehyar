@@ -24,4 +24,6 @@
 - Duplicate tracking references should produce warnings.
 - Overpayments must remain visible.
 - Financial history must remain auditable.
+- Backups must include all durable application tables required for restore.
+- Restore must validate the backup before any destructive write and must run transactionally.
 - Hard deletion of financial records is prohibited.

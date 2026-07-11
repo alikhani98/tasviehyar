@@ -156,6 +156,11 @@ h1 {
   gap: 1rem;
 }
 
+.backup-restore {
+  display: grid;
+  gap: 1rem;
+}
+
 .payment-management {
   display: grid;
   gap: 1rem;
@@ -398,6 +403,32 @@ h1 {
   align-items: flex-start;
 }
 
+.backup-issues {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.issue-item {
+  border-radius: 0.9rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid rgba(24, 69, 59, 0.12);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.issue-item p {
+  margin-bottom: 0;
+}
+
+.issue-error {
+  border-color: rgba(181, 51, 51, 0.22);
+  background: rgba(181, 51, 51, 0.06);
+}
+
+.issue-warning {
+  border-color: rgba(217, 181, 107, 0.38);
+  background: rgba(217, 181, 107, 0.12);
+}
+
 .party-row {
   width: 100%;
   text-align: right;
@@ -464,6 +495,14 @@ h1 {
 .destination-account-section {
   display: grid;
   gap: 1rem;
+}
+
+.backup-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .destination-account-layout {

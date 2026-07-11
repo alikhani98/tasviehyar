@@ -45,3 +45,9 @@
 - Mismatch review list with navigation to invoices, payments, and parties
 - Settlement visibility inside invoice, party, and payment detail views
 - Simple summary cards for the home and reconciliation views
+
+## Stage 7
+- Backup, restore, and data integrity safety
+- Local backup export with metadata and checksum
+- Restore preview, replace-all recovery, and transactional writes
+- Integrity validation, warnings, and backup history metadata

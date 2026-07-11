@@ -48,6 +48,18 @@ This stage adds payment recording and verification:
 - append-only verification history and duplicate warnings
 - simple payment history inside invoice details
 
+## Stage 6
+This stage adds settlement visibility:
+- derived customer and recipient settlement summaries
+- reconciliation cards and mismatch review
+- payment/invoice balance visibility inside the main views
+
+## Stage 7
+This stage adds backup and restore safety:
+- local backup export with metadata and checksum
+- preview before restore and replace-all transactional recovery
+- integrity validation, restore warnings, and backup history metadata
+
 ## Scripts
 - `npm run dev`
 - `npm run build`
@@ -60,4 +72,6 @@ This stage adds payment recording and verification:
 - Money is stored as integer تومان values only.
 - Payment lifecycle states are separate from verification states.
 - Settlement labels are derived from records and are not stored as editable truth.
+- Backups are local files that contain sensitive financial information.
+- Restore is replace-all, not merge, and validation happens before any destructive write.
 - Financial history is preserved through audit records.

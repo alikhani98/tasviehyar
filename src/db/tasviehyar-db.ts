@@ -10,6 +10,8 @@ import type {
   PaymentVerification
 } from "../domain";
 
+export const TASVIEHYAR_SCHEMA_VERSION = 3;
+
 export class TasviehYarDatabase extends Dexie {
   parties!: Table<Party, string>;
   invoices!: Table<Invoice, string>;
@@ -23,7 +25,7 @@ export class TasviehYarDatabase extends Dexie {
   constructor(name = "tasviehyar") {
     super(name);
 
-    this.version(3).stores({
+    this.version(TASVIEHYAR_SCHEMA_VERSION).stores({
       parties: "id, displayName, *aliases, phoneNumber, *roles, active, updatedAt",
       invoices: "id, customerPartyId, invoiceDate, lifecycleStatus, updatedAt",
       paymentInstructions: "id, invoiceId, recipientPartyId, lifecycleStatus, updatedAt",

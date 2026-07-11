@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { InvoiceManagement } from "./features/invoice-management/InvoiceManagement";
+import { BackupRestore } from "./features/backup-restore/BackupRestore";
 import { PaymentManagement } from "./features/payment-management/PaymentManagement";
 import { PartyManagement } from "./features/party-management/PartyManagement";
 import { SettlementReview } from "./features/settlement-review/SettlementReview";
@@ -8,11 +9,12 @@ const entryPoints = [
   { label: "ثبت فاکتور", active: true },
   { label: "ثبت پرداخت", active: true },
   { label: "حساب اشخاص", active: true },
-  { label: "مغایرت‌ها", active: true }
+  { label: "مغایرت‌ها", active: true },
+  { label: "پشتیبان‌گیری و بازیابی", active: true }
 ] as const;
 
 export function App() {
-  const [currentSection, setCurrentSection] = useState<"parties" | "invoices" | "payments" | "reconciliation">("payments");
+  const [currentSection, setCurrentSection] = useState<"parties" | "invoices" | "payments" | "reconciliation" | "backup">("payments");
 
   function scrollToPartyManagement() {
     document.getElementById("party-management")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
@@ -30,6 +32,10 @@ export function App() {
     document.getElementById("settlement-review")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
   }
 
+  function scrollToBackupRestore() {
+    document.getElementById("backup-restore")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+  }
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
       scrollToPaymentManagement();
@@ -41,14 +47,14 @@ export function App() {
   return (
     <main className="app-shell" lang="fa" dir="rtl">
       <section className="hero-card" aria-labelledby="app-title">
-        <p className="eyebrow">مرحله ۵</p>
+        <p className="eyebrow">مرحله ۷</p>
         <h1 id="app-title">تسویه‌یار</h1>
         <p className="hero-copy">
-          ابزار محلی و فارسی برای ثبت اشخاص، حساب‌های مقصد، فاکتورهای تک‌مبلغی، دستورهای پرداخت، و پرداخت‌های واقعیِ هر فاکتور، با ذخیره‌سازی آفلاین و تاریخچه قابل پیگیری.
+          ابزار محلی و فارسی برای ثبت اشخاص، حساب‌های مقصد، فاکتورهای تک‌مبلغی، دستورهای پرداخت، پرداخت‌های واقعیِ هر فاکتور، و پشتیبان‌گیری امن از داده‌ها، با ذخیره‌سازی آفلاین و تاریخچه قابل پیگیری.
         </p>
 
         <div className="status-banner" role="note" aria-label="notice">
-          این نسخه «ثبت فاکتور»، «ثبت پرداخت»، «حساب اشخاص»، و «مغایرت‌ها» را فعال کرده است. دستورهای پرداخت داخل جزئیات هر فاکتور و پرداخت‌های واقعی در بخش جداگانه مدیریت می‌شوند.
+          این نسخه «ثبت فاکتور»، «ثبت پرداخت»، «حساب اشخاص»، «مغایرت‌ها»، و «پشتیبان‌گیری و بازیابی» را فعال کرده است. دستورهای پرداخت داخل جزئیات هر فاکتور و پرداخت‌های واقعی در بخش جداگانه مدیریت می‌شوند.
         </div>
       </section>
 
@@ -64,7 +70,8 @@ export function App() {
               ((entry.label === "حساب اشخاص" && currentSection === "parties") ||
                 (entry.label === "ثبت فاکتور" && currentSection === "invoices") ||
                 (entry.label === "ثبت پرداخت" && currentSection === "payments") ||
-                (entry.label === "مغایرت‌ها" && currentSection === "reconciliation"))
+                (entry.label === "مغایرت‌ها" && currentSection === "reconciliation") ||
+                (entry.label === "پشتیبان‌گیری و بازیابی" && currentSection === "backup"))
                 ? "page"
                 : undefined
             }
@@ -82,6 +89,9 @@ export function App() {
                 } else if (entry.label === "مغایرت‌ها") {
                   setCurrentSection("reconciliation");
                   scrollToSettlementReview();
+                } else if (entry.label === "پشتیبان‌گیری و بازیابی") {
+                  setCurrentSection("backup");
+                  scrollToBackupRestore();
                 }
               }
             }}
@@ -102,6 +112,8 @@ export function App() {
       </section>
 
       <SettlementReview />
+
+      <BackupRestore />
 
       <InvoiceManagement onRequestPartyManagement={() => {
         setCurrentSection("parties");

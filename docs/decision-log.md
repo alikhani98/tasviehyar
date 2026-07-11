@@ -21,6 +21,9 @@
 - Stage 6 settlement balances are derived from the current active records and are not stored as editable truth.
 - Stage 6 reconciliation highlights mismatches instead of silently fixing them.
 - Stage 6 summary cards are navigation aids, not additional data entry surfaces.
+- Stage 7 backups are local files and restore replaces the current local database.
+- Stage 7 restore validation happens before any destructive write.
+- Stage 7 backup history metadata is local-only and helps pilots recover safely.
 - No hard deletion of financial records.
 - All money is stored in integer تومان values.
 - No commit, push, or pull request is created without explicit instruction.

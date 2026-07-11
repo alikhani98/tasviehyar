@@ -1,0 +1,42 @@
+name: Bug report
+description: Report a problem with TasviehYar
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Please do not include customer information, real financial records, banking identifiers,
+        or backup files. Use fictional or redacted examples only.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the issue briefly.
+      placeholder: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: 1. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Include browser, screen size, and whether the app was offline if relevant.

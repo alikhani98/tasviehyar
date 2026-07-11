@@ -39,7 +39,7 @@ describe("pilot readiness panel", () => {
     render(<PilotReadinessPanel service={service} />);
 
     expect(await screen.findByText(/طرف‌ها: ۳/)).toBeInTheDocument();
-    expect(screen.getByText("نسخه برنامه: 0.0.0")).toBeInTheDocument();
+    expect(screen.getByText("نسخه برنامه: 0.9.0-alpha.0")).toBeInTheDocument();
     expect(screen.getByText(/دفتر کاغذی/)).toBeInTheDocument();
     expect(screen.getByText("آنلاین")).toBeInTheDocument();
   });

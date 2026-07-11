@@ -1,93 +1,151 @@
-# TasviehYar
+# TasviehYar / تسویه‌یار
 
-TasviehYar is a Persian, local-first settlement and payment-reconciliation app for a traditional pistachio wholesale business.
+TasviehYar is a Persian, local-first settlement and payment-reconciliation app for a traditional pistachio wholesale business. It helps the team track parties, invoices, payment instructions, payments, balances, reconciliation issues, reports, and backups without relying on a backend.
 
-## Stage 0
-This stage provides:
-- a React + TypeScript + Vite foundation
-- Dexie schema scaffolding for local-first storage
-- Zod-backed domain types and validation
-- pure settlement calculations and warnings
-- a simple Persian RTL shell
-- tests for the required settlement scenario
+TasviehYar یک نرم‌افزار فارسی و محلی‌اول برای تسویه‌حساب و پیگیری پرداخت‌ها در یک کسب‌وکار عمده‌فروشی پسته است. این برنامه برای ثبت اشخاص، فاکتورها، دستورهای پرداخت، پرداخت‌ها، مغایرت‌ها، گزارش‌ها و پشتیبان‌ها طراحی شده و بدون سرور هم کار می‌کند.
 
-## Stage 1
-This stage adds party management:
-- create, view, edit, search, filter, archive, and restore parties
-- multi-role party records
-- duplicate-name, alias, and phone warnings
-- atomic audit events for party changes
+## Status
 
-## Stage 2
-This stage adds destination-account management inside each party:
-- create, view, edit, archive, and restore destination accounts
-- multiple accounts per party
-- identifier normalization and duplicate warnings
-- atomic audit events for account changes
-- masked identifiers with reveal/copy in the party details view
+Public alpha, pilot-stage.
 
-## Stage 3
-This stage adds invoice management:
-- create, view, edit, search, filter, and cancel invoices
-- one total amount per invoice
-- one invoice per customer
-- customer selection limited to active customer-role parties for new invoices
-- warning-based duplicate detection and atomic audit events
+This repository is available for review and evaluation, but the software is not production-ready.
 
-## Stage 4
-This stage adds payment instructions inside invoice details:
-- create, view, edit, cancel, and restore instructions
-- multiple instructions per invoice
-- active total and unassigned remainder derived from the invoice
-- duplicate warnings, atomic audit events, and read-only cancelled invoices
+## What problem it solves
 
-## Stage 5
-This stage adds payment recording and verification:
-- create, view, edit, cancel, and reverse payments
-- payment allocations to invoices and instructions
-- append-only verification history and duplicate warnings
-- simple payment history inside invoice details
+- Keeps one local working copy of settlement data in the browser
+- Makes invoice totals, payment instructions, payments, and balances visible
+- Surfaces warnings and reconciliation issues instead of hiding them
+- Provides a safe local backup and restore flow for pilot use
 
-## Stage 6
-This stage adds settlement visibility:
-- derived customer and recipient settlement summaries
-- reconciliation cards and mismatch review
-- payment/invoice balance visibility inside the main views
+## Principles
 
-## Stage 7
-This stage adds backup and restore safety:
-- local backup export with metadata and checksum
-- preview before restore and replace-all transactional recovery
-- integrity validation, restore warnings, and backup history metadata
+- Local-first and offline-first
+- Persian-first and RTL-first
+- Derived balances, not manual ledger editing
+- Audit history for important lifecycle changes
+- Clear warnings before destructive or high-risk actions
 
-## Stage 8
-This stage prepares the app for controlled pilot use:
-- direct navigation to the home, people, invoices, payments, reconciliation, and backup areas
-- a simpler home page with pilot priorities and local readiness status
-- offline loading with an installable shell and local data access
-- clearer money and date previews, plus protection for unsafe actions and unsaved changes
-- backup/pilot reminders and end-to-end workflow verification
+## Implemented through Stage 9
 
-## Stage 9
-This stage adds operational reporting:
-- customer, recipient, invoice, payment, reconciliation, and party-statement summaries
-- date, party, lifecycle, and mismatch filtering
-- printable report views with Excel export and CSV fallback
-- read-only reporting that derives from existing local records
-- Stage 9 is complete in this branch and the Excel files are reports, not backups
+- Party management with multiple roles
+- Destination accounts inside party details
+- Invoice management with duplicate warnings and lifecycle controls
+- Payment-instruction management inside invoice details
+- Payment recording, allocation, and verification
+- Settlement summaries and reconciliation
+- Read-only operational reports
+- Excel export with CSV fallback for reports
+- Backup and restore with integrity checks
+- Pilot-ready navigation and offline-friendly shell
 
-## Scripts
-- `npm run dev`
-- `npm run build`
-- `npm run lint`
-- `npm run test`
-- `npm run typecheck`
+## Technology
 
-## Notes
-- The app intentionally avoids inventory, line items, and backend dependencies.
-- Money is stored as integer تومان values only.
-- Payment lifecycle states are separate from verification states.
-- Settlement labels are derived from records and are not stored as editable truth.
-- Backups are local files that contain sensitive financial information.
-- Restore is replace-all, not merge, and validation happens before any destructive write.
-- Financial history is preserved through audit records.
+- React
+- TypeScript
+- Vite
+- Dexie
+- Zod
+- Vitest
+- Testing Library
+
+## Requirements
+
+- Node.js 20 or newer
+- npm
+- A modern browser with IndexedDB support
+
+## Install
+
+```bash
+npm ci
+```
+
+## Development
+
+```bash
+npm run dev
+npm run preview
+npm run typecheck
+npm run lint
+npm run test
+npm run build
+```
+
+## Privacy and local storage
+
+TasviehYar stores working data locally in IndexedDB through Dexie. No backend is required for core use. Because data stays on the device, browser storage and local backups should be treated as sensitive.
+
+Do not enter real customer information, real banking identifiers, or real financial records into test or demo data unless you are sure the environment is private and intended for that purpose.
+
+## Backup and restore
+
+The application includes local backup and restore features for pilot safety.
+
+- Backups are local files
+- Restore is replace-all, not merge
+- Restore validation happens before destructive writes
+- Backup files can contain sensitive financial information
+
+Do not confuse report exports with backups. Excel and CSV report files are for analysis and review only and cannot be restored into TasviehYar.
+
+## Reports and Excel export
+
+Stage 9 adds read-only operational reports:
+
+- customer summaries
+- recipient summaries
+- invoice reports
+- payment-instruction reports
+- payment reports
+- reconciliation reports
+- single-party statements
+
+Reports are derived from the existing records in the browser. They do not mutate source data.
+
+Excel export is available for reports, with CSV fallback where implemented. Exported files may contain sensitive financial information and should be stored carefully.
+
+## Current limitations
+
+- No backend or cloud sync
+- No accounting, ERP, tax, or inventory module
+- No line-item invoices
+- No AI, OCR, or voice input
+- No bank connectivity
+- No production-readiness claim
+
+## Roadmap summary
+
+The repository is organized by stage:
+
+- Stage 0 to Stage 2: foundation, parties, and destination accounts
+- Stage 3 to Stage 5: invoices, instructions, and payments
+- Stage 6: balances and reconciliation
+- Stage 7: backup and restore safety
+- Stage 8: pilot readiness and UX polish
+- Stage 9: operational reports and Excel export
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request or issue.
+
+Keep changes small, local-first, and compatible with the current Stage 9 baseline.
+
+## Security reporting
+
+If you find a security or privacy concern, read [SECURITY.md](SECURITY.md) first.
+
+Do not publish customer information, real financial records, banking identifiers, or backup files in issues or pull requests.
+
+## License status
+
+No open-source license is currently granted.
+
+All rights are reserved by default.
+
+A licensing decision will be made before any stable release.
+
+Public repository access on GitHub allows inspection of the source, but it does not grant unrestricted reuse rights.
+
+## Important note
+
+TasviehYar is not professional accounting, legal, or tax advice.

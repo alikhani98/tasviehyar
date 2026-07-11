@@ -1,7 +1,8 @@
 {
-  "name": "tasviehyar-app",
+  "name": "tasviehyar",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.9.0-alpha.0",
+  "description": "Persian local-first settlement and payment-reconciliation app for a traditional pistachio wholesale business.",
   "type": "module",
   "scripts": {
     "dev": "vite",

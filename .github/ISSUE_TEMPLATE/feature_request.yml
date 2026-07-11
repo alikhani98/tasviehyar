@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest an improvement for TasviehYar
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Please keep the request aligned with the current local-first scope and avoid sharing
+        sensitive data.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What would you like to improve?
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Why it matters
+      description: Explain the problem or user need.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Suggested solution
+      description: Describe your idea, if you have one.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context

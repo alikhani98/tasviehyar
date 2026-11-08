@@ -21,7 +21,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.18.0
           cache: npm
 
       - name: Install dependencies
@@ -34,7 +34,53 @@ jobs:
         run: npm run lint
 
       - name: Test
-        run: npm run test
+        run: npm run test -- --maxWorkers=1 --no-file-parallelism
+
+      - name: Runtime dependency security audit
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Full dependency security audit
+        run: npm audit --audit-level=high
 
       - name: Build
         run: npm run build
+
+      - name: Prepare release artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf artifact
+          mkdir -p artifact/dist
+          cp -R dist/. artifact/dist/
+          git rev-parse HEAD > artifact/COMMIT
+          (
+            cd artifact
+            find dist -type f -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS
+          )
+
+          if find artifact -mindepth 1 -maxdepth 1 \
+            ! -name dist ! -name SHA256SUMS ! -name COMMIT \
+            -print -quit | grep -q .; then
+            echo 'Unexpected file in release artifact.' >&2
+            exit 1
+          fi
+
+          if find artifact -type f \( \
+            -name '.env' -o -name '.env.*' -o -name '*.pem' -o -name '*.key' -o \
+            -name '*.p12' -o -name '*.pfx' -o -name 'id_rsa*' -o -name 'credentials*' \
+          \) -print -quit | grep -q .; then
+            echo 'Potential secret file found in release artifact.' >&2
+            exit 1
+          fi
+
+          (
+            cd artifact
+            sha256sum -c SHA256SUMS
+          )
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tasviehyar-dist-${{ github.sha }}
+          path: artifact
+          if-no-files-found: error

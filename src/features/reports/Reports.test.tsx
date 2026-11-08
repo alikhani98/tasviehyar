@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Reports } from "./Reports";
@@ -75,6 +75,7 @@ function createRepositories() {
 
   return {
     party,
+    payment,
     repositories: {
       partyRepository: {
         listParties: async () => [party]
@@ -99,6 +100,25 @@ function createRepositories() {
 describe("reports", () => {
   afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it("includes both endpoints of the stored payment-date range independently of creation time", async () => {
+    const { payment, repositories } = createRepositories();
+    vi.spyOn(repositories.paymentRepository, "listPayments").mockResolvedValue([
+      { ...payment, id: "before", trackingReference: "DATE-BEFORE", paymentDate: "2026-07-09" },
+      { ...payment, id: "first", trackingReference: "DATE-FIRST", paymentDate: "2026-07-10", createdAt: "2026-07-09T20:30:00.000Z" },
+      { ...payment, id: "last", trackingReference: "DATE-LAST", paymentDate: "2026-07-11", createdAt: "2026-07-10T20:30:00.000Z" },
+      { ...payment, id: "after", trackingReference: "DATE-AFTER", paymentDate: "2026-07-12" }
+    ]);
+    render(<Reports {...repositories} />);
+    await userEvent.click(screen.getByRole("tab", { name: "پرداخت‌ها تأیید و تخصیص" }));
+    await screen.findByRole("row", { name: /DATE-AFTER/ });
+    fireEvent.change(screen.getByLabelText("از تاریخ"), { target: { value: "2026-07-10" } });
+    fireEvent.change(screen.getByLabelText("تا تاریخ"), { target: { value: "2026-07-11" } });
+    expect(screen.getByRole("row", { name: /DATE-FIRST/ })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: /DATE-LAST/ })).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: /DATE-BEFORE|DATE-AFTER/ })).not.toBeInTheDocument();
   });
 
   it("renders the report shell and responds to party-statement navigation", async () => {

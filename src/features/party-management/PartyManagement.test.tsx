@@ -26,15 +26,20 @@ describe("party management UI", () => {
     cleanup();
   });
 
-  it("keeps the invoice and party entry points enabled in the shell", () => {
-    render(<App />);
+  it("opens party management from the invoice workflow when no customer exists", async () => {
+    const user = userEvent.setup();
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
+    window.history.replaceState(null, "", "#/invoices");
 
-    expect(screen.getByRole("button", { name: "ثبت فاکتور باز کردن بخش" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "جست‌وجوی شخص باز کردن بخش" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "ثبت پرداخت باز کردن بخش" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "گزارش‌ها باز کردن بخش" })).toBeEnabled();
-    expect(screen.getByRole("heading", { name: "ثبت فاکتور" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "حساب اشخاص" })).toBeInTheDocument();
+    try {
+      render(<App />);
+      await user.click(await screen.findByRole("button", { name: "رفتن به حساب اشخاص" }));
+      expect(screen.getByRole("heading", { name: "حساب اشخاص" })).toBeVisible();
+      expect(screen.getByRole("link", { name: "اشخاص" })).toHaveAttribute("aria-current", "page");
+    } finally {
+      window.history.replaceState(null, "", "/");
+      scrollTo.mockRestore();
+    }
   });
 
   it("creates and archives a party from the accessible RTL form", async () => {

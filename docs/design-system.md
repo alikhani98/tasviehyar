@@ -1,32 +1,18 @@
-# Design System
+# سیستم طراحی تسویه‌یار
 
-TasviehYar uses one cohesive Persian RTL visual system across the shell and feature areas.
+## پوسته و ناوبری
 
-## Goals
+- در عرض کمتر از ۶۰۰ پیکسل، نوار پایین چهار مقصد «خانه»، «فاکتورها»، «پرداخت‌ها» و «بیشتر» را نشان می‌دهد. اشخاص و مغایرت‌ها از خانه هم در دسترس‌اند.
+- از ۶۰۰ تا ۱۰۲۳ پیکسل، همهٔ مقصدهای اصلی روی نوار باریک سمت راست در دسترس‌اند. از ۱۰۲۴ پیکسل، نوار کناری از برچسب‌های کنار آیکون استفاده می‌کند. فرم‌ها و پنل‌های جزئیات از ۱۱۰۰ پیکسل فضای دو ستون دارند.
+- مسیرهای هش برای بازکردن مستقیم بخش‌ها و استفاده از دکمهٔ بازگشت مرورگر به کار می‌روند. هنگام جابه‌جایی، عنوان صفحه تمرکز می‌گیرد. وضعیت فرم و فیلتر هر بخش در طول نشست حفظ می‌شود.
 
-- Keep the interface readable on small mobile screens.
-- Make labels literal and easy to understand for non-technical users.
-- Keep important actions visible without a dense dashboard.
-- Preserve a calm, business-like tone for settlement work.
+## توکن‌ها و اجزای مشترک
 
-## Visual Direction
+- زمینه، سطح، متن، حاشیه، تمرکز و وضعیت‌های درآمد، هزینه، بدهی، بستانکاری، هشدار، خطا و موفقیت با توکن‌های معنایی در `src/styles.css` تعریف شده‌اند.
+- دکمه‌ها، فیلدها، کارت‌ها، نشان‌های وضعیت، اعلان‌ها و سبک پایهٔ گفت‌وگوها از همان توکن‌ها استفاده می‌کنند. آیکون‌های خطی پوسته به‌صورت SVG در خود برنامه هستند.
+- متن پایه ۱۶ پیکسل است و نمایش عددها از ارقام هم‌عرض در فونت‌های پشتیبان استفاده می‌کند. پشتهٔ فونت از قلم‌های نصب‌شده و سیستمی استفاده می‌کند. برنامه برای بارگذاری قلم به شبکه متکی نیست.
+- کنترل‌های اصلی حداقل ۴۸ پیکسل ارتفاع دارند. تمرکز صفحه‌کلید با حاشیهٔ مشخص دیده می‌شود و مقصد فعال هم با وزن متن و خط داخلی مشخص است.
 
-- Warm cream backgrounds with subtle layered surfaces
-- Deep green and charcoal accents for primary actions and emphasis
-- Soft borders and shadows instead of hard grid lines
-- Rounded cards and buttons with comfortable touch targets
+## ظاهر برنامه
 
-## Interaction Rules
-
-- The document direction is RTL.
-- Navigation should stay simple and obvious.
-- Risky actions should use plain-language warnings.
-- Demo and report downloads should be clearly separated from backups.
-- Lists should prefer masking sensitive financial identifiers by default.
-
-## Accessibility Notes
-
-- Use large text and generous spacing.
-- Keep forms and buttons easy to tap on mobile.
-- Avoid hidden controls that require technical familiarity.
-- Preserve clear focus states and readable contrast.
+«تنظیمات» سه گزینهٔ روشن، تیره و مطابق دستگاه دارد. انتخاب کاربر در کلید `tasviehyar-theme` در `localStorage` ذخیره می‌شود. گزینهٔ پیش‌فرض مطابق دستگاه است و در زمان اجرا به تغییر ظاهر دستگاه واکنش نشان می‌دهد. نسخهٔ چاپی از رنگ‌های روشن استفاده می‌کند.

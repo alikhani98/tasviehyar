@@ -51,7 +51,7 @@ type LifecycleFilter = "all" | "active" | "cancelled";
 type PaymentLifecycleFilter = "all" | "active" | "cancelled" | "reversed";
 type SettlementFilter = "all" | "unpaid" | "partially_paid" | "provisionally_paid" | "fully_settled" | "overpaid" | "needs_review";
 type ReconciliationSeverityFilter = "all" | "high" | "medium" | "low";
-type ReconciliationTypeFilter = "all" | "unallocated_payment" | "disputed_payment" | "duplicate_tracking_reference" | "probable_duplicate_payment" | "instruction_overpayment" | "invoice_overpayment" | "recipient_mismatch" | "destination_account_owner_mismatch" | "active_instruction_without_destination_account" | "reported_payment_awaiting_confirmation";
+type ReconciliationTypeFilter = "all" | "unallocated_payment" | "disputed_payment" | "duplicate_tracking_reference" | "probable_duplicate_payment" | "instruction_overpayment" | "invoice_overpayment" | "cancelled_instruction_allocation" | "recipient_mismatch" | "destination_account_owner_mismatch" | "active_instruction_without_destination_account" | "reported_payment_awaiting_confirmation";
 type AllocationStateFilter = "all" | "allocated" | "unallocated";
 
 type ReportFilters = {
@@ -1606,6 +1606,7 @@ export function Reports({
                 <option value="probable_duplicate_payment">پرداخت مشابه</option>
                 <option value="instruction_overpayment">بیش‌پرداخت دستور</option>
                 <option value="invoice_overpayment">بیش‌پرداخت فاکتور</option>
+                <option value="cancelled_instruction_allocation">تخصیص به دستور لغوشده</option>
                 <option value="recipient_mismatch">ناهمخوانی گیرنده</option>
                 <option value="destination_account_owner_mismatch">مالک حساب مقصد</option>
                 <option value="active_instruction_without_destination_account">دستور بدون حساب مقصد</option>

@@ -47,6 +47,7 @@ describe("payment management UI", () => {
   ])("characterizes the default payment date at %s (Tehran date %s)", async (instant, tehranDate) => {
     const { database, ...repositories } = createRepositories();
     try {
+      vi.useFakeTimers({ toFake: ["Date"] });
       vi.setSystemTime(new Date(instant));
       vi.resetModules();
       const { PaymentManagement } = await import("./PaymentManagement");
@@ -58,14 +59,13 @@ describe("payment management UI", () => {
       const props = { ...repositories, repository: repositories.paymentRepository };
       const view = render(<PaymentManagement {...props} />);
       await screen.findByText("پرداختی پیدا نشد.");
-      expect(screen.getByLabelText("تاریخ پرداخت")).toHaveValue("2026-07-10");
+      expect(screen.getByLabelText("تاریخ پرداخت")).toHaveValue(tehranDate);
 
-      // A new form from the same module still uses the date captured at import.
       view.unmount();
       vi.setSystemTime(new Date("2026-07-11T09:00:00.000Z"));
       render(<PaymentManagement {...props} />);
       await screen.findByText("پرداختی پیدا نشد.");
-      expect(screen.getByLabelText("تاریخ پرداخت")).toHaveValue("2026-07-10");
+      expect(screen.getByLabelText("تاریخ پرداخت")).toHaveValue("2026-07-11");
     } finally {
       cleanup();
       await database.delete();

@@ -100,19 +100,20 @@ export function summarizeInvoiceSettlement(
   const warnings: DomainWarning[] = [];
   const errors: DomainError[] = [];
   const paymentsById = new Map(payments.map((payment) => [payment.id, payment] as const));
+  const invoiceAllocations = allocations.filter((allocation) => allocation.invoiceId === invoice.id);
   const instructionWarnings = validateInvoiceInstructionTotals(invoice, instructions);
   warnings.push(...instructionWarnings);
   warnings.push(...findDuplicateTrackingReferenceWarnings(payments));
 
   const allocationsByPayment = new Map<string, PaymentAllocation[]>();
-  for (const allocation of allocations) {
+  for (const allocation of invoiceAllocations) {
     const existing = allocationsByPayment.get(allocation.paymentId) ?? [];
     existing.push(allocation);
     allocationsByPayment.set(allocation.paymentId, existing);
   }
 
   const allocationsByInstruction = new Map<string, PaymentAllocation[]>();
-  for (const allocation of allocations) {
+  for (const allocation of invoiceAllocations) {
     if (!allocation.paymentInstructionId) {
       continue;
     }
@@ -201,7 +202,7 @@ export function summarizeInvoiceSettlement(
   });
 
   const confirmedAllocatedAmount = sumMoney(
-    allocations
+    invoiceAllocations
       .filter((allocation) => {
         const payment = paymentsById.get(allocation.paymentId);
         return payment ? isActivePayment(payment) && payment.verificationStatus === "confirmed" : false;
@@ -210,7 +211,7 @@ export function summarizeInvoiceSettlement(
   );
 
   const provisionalAllocatedAmount = sumMoney(
-    allocations
+    invoiceAllocations
       .filter((allocation) => {
         const payment = paymentsById.get(allocation.paymentId);
         return payment ? isActivePayment(payment) && isCountedForProvisional(payment.verificationStatus) : false;

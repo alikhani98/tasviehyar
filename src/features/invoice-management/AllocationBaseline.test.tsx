@@ -21,7 +21,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it.each(["invoice-only", "cancelled instruction"] as const)(
+it.each(["invoice-only", "mixed", "cancelled instruction"] as const)(
   "characterizes settlement across screens and exports for %s allocations",
   async (scenario) => {
     const database = new TasviehYarDatabase(`allocation-baseline-${crypto.randomUUID()}`);
@@ -39,7 +39,7 @@ it.each(["invoice-only", "cancelled instruction"] as const)(
       const invoice = await invoiceRepository.createInvoice({
         customerPartyId: payer.id, invoiceDate: "2026-07-10", totalAmount: 100_000, referenceNumber: "BASE-01"
       });
-      const instruction = scenario === "cancelled instruction"
+      const instruction = scenario !== "invoice-only"
         ? await paymentInstructionRepository.createInstruction({ invoiceId: invoice.id, recipientPartyId: recipient.id, instructedAmount: 100_000 })
         : undefined;
       const confirmed = await paymentRepository.createPayment({
@@ -50,9 +50,11 @@ it.each(["invoice-only", "cancelled instruction"] as const)(
         payerPartyId: payer.id, recipientPartyId: recipient.id, amount: 40_000,
         paymentDate: "2026-07-10", paymentMethod: "bank_transfer", verificationStatus: "reported"
       });
-      for (const payment of [confirmed, reported]) {
+      for (const [index, payment] of [confirmed, reported].entries()) {
         await paymentRepository.createAllocation(payment.id, {
-          invoiceId: invoice.id, paymentInstructionId: instruction?.id, allocatedAmount: payment.amount
+          invoiceId: invoice.id,
+          paymentInstructionId: scenario === "mixed" && index === 1 ? undefined : instruction?.id,
+          allocatedAmount: payment.amount
         });
       }
       await paymentRepository.recordVerification(confirmed.id, {
@@ -61,9 +63,11 @@ it.each(["invoice-only", "cancelled instruction"] as const)(
       const payments = await paymentRepository.listPayments();
       const allocations = await paymentRepository.listAllocations();
       expect(allocations).toHaveLength(2);
-      expect(allocations.map((allocation) => allocation.paymentInstructionId)).toEqual([instruction?.id, instruction?.id]);
+      expect(allocations.map((allocation) => allocation.paymentInstructionId).sort()).toEqual(
+        scenario === "mixed" ? [instruction?.id, undefined].sort() : [instruction?.id, instruction?.id]
+      );
 
-      if (instruction) {
+      if (scenario === "cancelled instruction" && instruction) {
         expect(summarizeInvoiceBalance(invoice, [instruction], payments, allocations)).toMatchObject({
           confirmedOutstandingAmount: 30_000, provisionalOutstandingAmount: 0, overpaymentAmount: 10_000
         });
@@ -76,9 +80,8 @@ it.each(["invoice-only", "cancelled instruction"] as const)(
       expect(summarizeInvoiceSettlement(invoice, instructions, payments, allocations)).toMatchObject({
         confirmedOutstandingAmount: 30_000, provisionalOutstandingAmount: 0
       });
-      // Characterize the current discrepancy without choosing a policy for cancelled instructions.
       expect(summarizeInvoiceBalance(invoice, instructions, payments, allocations)).toMatchObject({
-        confirmedOutstandingAmount: 100_000, provisionalOutstandingAmount: 100_000, overpaymentAmount: 0
+        confirmedOutstandingAmount: 30_000, provisionalOutstandingAmount: 0, overpaymentAmount: 10_000
       });
 
       vi.stubGlobal("URL", class extends URL {
@@ -97,25 +100,29 @@ it.each(["invoice-only", "cancelled instruction"] as const)(
       await user.click(await screen.findByRole("button", { name: /BASE-01/ }));
       const summary = within(screen.getByLabelText("خلاصه تسویه فاکتور"));
       for (const label of ["مانده قطعی", "مانده احتمالی"]) {
-        expect(summary.getByText(label).nextElementSibling).toHaveTextContent(formatInvoiceAmount(100_000));
+        expect(summary.getByText(label).nextElementSibling).toHaveTextContent(formatInvoiceAmount(label === "مانده قطعی" ? 30_000 : 0));
       }
       const review = within(screen.getByRole("region", { name: "مغایرت‌ها" }));
       expect(await review.findByText("پرداخت اعلام‌شده در انتظار تأیید")).toBeInTheDocument();
-      expect(review.queryByText("فاکتور دارای پرداخت اضافی")).not.toBeInTheDocument();
+      if (scenario === "cancelled instruction") {
+        expect(await review.findByText("تخصیص به دستور لغوشده")).toBeInTheDocument();
+      } else {
+        expect(review.queryByText("تخصیص به دستور لغوشده")).not.toBeInTheDocument();
+      }
 
       const reports = within(screen.getByRole("region", { name: "گزارش‌ها" }));
       await user.click(reports.getByRole("tab", { name: "فاکتورها وضعیت تسویه" }));
       const row = await reports.findByRole("row", { name: /BASE-01/ });
-      expect(within(row).getAllByRole("cell")[6]).toHaveTextContent(formatInvoiceAmount(100_000));
+      expect(within(row).getAllByRole("cell")[6]).toHaveTextContent(formatInvoiceAmount(30_000));
       await user.click(reports.getByRole("button", { name: "CSV" }));
       expect(csv.mock.results.at(-1)?.value).toContain("BASE-01");
-      expect(csv.mock.calls.at(-1)?.[0]).toMatchObject([{ confirmedOutstanding: 100_000, provisionalOutstanding: 100_000 }]);
+      expect(csv.mock.calls.at(-1)?.[0]).toMatchObject([{ confirmedOutstanding: 30_000, provisionalOutstanding: 0 }]);
       await user.click(reports.getByRole("button", { name: "Excel" }));
       await waitFor(() => expect(reports.getByText("فایل اکسل گزارش آماده شد.")).toBeInTheDocument());
       const workbook = await excel.mock.results[0]?.value;
       const exported = workbook?.getWorksheet("فاکتورها");
-      expect(exported?.getCell("H2").value).toBe(100_000);
-      expect(exported?.getCell("I2").value).toBe(100_000);
+      expect(exported?.getCell("H2").value).toBe(30_000);
+      expect(exported?.getCell("I2").value).toBe(0);
     } finally {
       cleanup();
       await database.delete();

@@ -20,6 +20,7 @@ const typeValues: TypeFilter[] = [
   "probable_duplicate_payment",
   "instruction_overpayment",
   "invoice_overpayment",
+  "cancelled_instruction_allocation",
   "recipient_mismatch",
   "destination_account_owner_mismatch",
   "active_instruction_without_destination_account",

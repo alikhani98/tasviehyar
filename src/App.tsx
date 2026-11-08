@@ -1,172 +1,200 @@
-import { useState } from "react";
+import { Component, lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { InvoiceManagement } from "./features/invoice-management/InvoiceManagement";
-import { BackupRestore } from "./features/backup-restore/BackupRestore";
 import { PilotReadinessPanel } from "./features/pilot-readiness/PilotReadinessPanel";
 import { PaymentManagement } from "./features/payment-management/PaymentManagement";
 import { PartyManagement } from "./features/party-management/PartyManagement";
-import { Reports } from "./features/reports/Reports";
-import { SettlementReview } from "./features/settlement-review/SettlementReview";
+import { destinations, isSection, type Section, sections } from "./shell/destinations";
+import { Icon, SectionLink } from "./shell/navigation";
+import { type Theme, themes, useTheme } from "./shell/theme";
 
-const entryPoints = [
-  { label: "صفحه اصلی", section: "home" },
-  { label: "اشخاص", section: "parties" },
-  { label: "فاکتورها", section: "invoices" },
-  { label: "ثبت پرداخت", section: "payments" },
-  { label: "گزارش‌ها", section: "reports" },
-  { label: "مغایرت‌ها", section: "reconciliation" },
-  { label: "پشتیبان‌گیری و بازیابی", section: "backup" }
+const BackupRestore = lazy(() => import("./features/backup-restore/BackupRestore").then(({ BackupRestore: component }) => ({ default: component })));
+const Reports = lazy(() => import("./features/reports/Reports").then(({ Reports: component }) => ({ default: component })));
+const SettlementReview = lazy(() => import("./features/settlement-review/SettlementReview").then(({ SettlementReview: component }) => ({ default: component })));
+
+class RouteLoadErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  override state = { hasError: false };
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true };
+  }
+
+  override render() {
+    if (this.state.hasError) {
+      return (
+        <div className="notice notice-error" role="alert">
+          این بخش در دسترس نیست. پس از اتصال دوباره، صفحه را تازه‌سازی کنید.
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const quickActions = [
+  { section: "invoices", label: "ثبت فاکتور", description: "فاکتور جدید و مانده مشتری" },
+  { section: "payments", label: "ثبت پرداخت", description: "پرداخت جدید و وضعیت تأیید" },
+  { section: "parties", label: "جست‌وجوی شخص", description: "اشخاص و حساب‌های مقصد" },
+  { section: "reconciliation", label: "مشاهده مغایرت‌ها", description: "پرداخت‌ها و مانده‌های نیازمند بررسی" }
 ] as const;
 
-const homeActions = [
-  { label: "ثبت فاکتور", target: "invoices" },
-  { label: "ثبت پرداخت", target: "payments" },
-  { label: "گزارش‌ها", target: "reports" },
-  { label: "جست‌وجوی شخص", target: "parties" },
-  { label: "مشاهده مغایرت‌ها", target: "reconciliation" },
-  { label: "پشتیبان نمایشی", target: "backup" }
-] as const;
+const themeLabels: Record<Theme, string> = { light: "روشن", dark: "تیره", system: "مطابق دستگاه" };
+
+function readSection(): Section {
+  const section = window.location.hash.slice(2);
+  return window.location.hash.startsWith("#/") && isSection(section) ? section : "home";
+}
 
 export function App() {
-  const [currentSection, setCurrentSection] = useState<"home" | "parties" | "invoices" | "payments" | "reports" | "reconciliation" | "backup">("home");
+  const [currentSection, setCurrentSection] = useState(readSection);
+  const [visitedSections, setVisitedSections] = useState<Set<Section>>(() => new Set([readSection()]));
+  const { theme, selectTheme } = useTheme();
+  const pageTitle = useRef<HTMLHeadingElement>(null);
+  const previousSection = useRef(currentSection);
+  const scrollPositions = useRef<Partial<Record<Section, number>>>({});
 
-  function scrollToHome() {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+  const navigate = useCallback((section: Section) => {
+    if (readSection() !== section) {
+      scrollPositions.current[currentSection] = window.scrollY;
+      window.history.pushState(null, "", `#/${section}`);
+    }
+    setVisitedSections((visited) => visited.has(section) ? visited : new Set(visited).add(section));
+    setCurrentSection(section);
+  }, [currentSection]);
 
-  function scrollToPartyManagement() {
-    document.getElementById("party-management")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
-  }
+  useEffect(() => {
+    function syncSection() {
+      setCurrentSection(readSection());
+    }
 
-  function scrollToInvoiceManagement() {
-    document.getElementById("invoice-management")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
-  }
+    function openRecord(event: Event) {
+      const section: unknown = (event as CustomEvent<{ section?: unknown }>).detail?.section;
+      if (isSection(section)) navigate(section);
+    }
 
-  function scrollToPaymentManagement() {
-    document.getElementById("payment-management")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
-  }
+    window.addEventListener("hashchange", syncSection);
+    window.addEventListener("popstate", syncSection);
+    window.addEventListener("tasviehyar-open-record", openRecord);
+    return () => {
+      window.removeEventListener("hashchange", syncSection);
+      window.removeEventListener("popstate", syncSection);
+      window.removeEventListener("tasviehyar-open-record", openRecord);
+    };
+  }, [navigate]);
 
-  function scrollToReports() {
-    document.getElementById("reports")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
-  }
+  useLayoutEffect(() => {
+    if (previousSection.current !== currentSection) {
+      pageTitle.current?.focus({ preventScroll: true });
+      window.scrollTo({ top: scrollPositions.current[currentSection] ?? 0, behavior: "auto" });
+      previousSection.current = currentSection;
+    }
+  }, [currentSection]);
 
-  function scrollToSettlementReview() {
-    document.getElementById("settlement-review")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
-  }
+  useEffect(() => {
+    setVisitedSections((visited) => visited.has(currentSection) ? visited : new Set(visited).add(currentSection));
+  }, [currentSection]);
 
-  function scrollToBackupRestore() {
-    document.getElementById("backup-restore")?.scrollIntoView?.({ behavior: "smooth", block: "start" });
-  }
+  const current = destinations[currentSection];
 
   return (
-    <main className="app-shell" lang="fa" dir="rtl">
-      <section className="hero-card" aria-labelledby="app-title">
-        <p className="eyebrow">مرحله ۱۰</p>
-        <h1 id="app-title">تسویه‌یار</h1>
-        <p className="hero-copy">
-          ابزار محلی و فارسی برای ثبت اشخاص، حساب‌های مقصد، فاکتورهای تک‌مبلغی، دستورهای پرداخت، پرداخت‌های واقعیِ هر فاکتور، گزارش‌های عملیاتی و پشتیبان‌گیری امن از داده‌ها، با یک ظاهر یکدست، دسترسی سریع و تاریخچه قابل پیگیری.
-        </p>
+    <div className="app-shell" lang="fa" dir="rtl">
+      <a className="skip-link" href="#app-main" onClick={(event) => {
+        event.preventDefault();
+        pageTitle.current?.focus();
+      }}>رفتن به محتوای صفحه</a>
 
-        <div className="status-banner" role="note" aria-label="notice">
-          این نسخه «صفحه اصلی»، «اشخاص»، «فاکتورها»، «ثبت پرداخت»، «گزارش‌ها»، «مغایرت‌ها»، و «پشتیبان‌گیری و بازیابی» را فعال کرده است. یک پشتیبان نمایشی هم برای شروع سریع و دمو در دسترس است.
+      <header className="shell-topbar">
+        <SectionLink section="home" className="brand-lockup" navigate={navigate}>
+          <span className="brand-mark"><Icon name="mark" /></span>
+          <span>تسویه‌یار</span>
+        </SectionLink>
+        <span className="local-label"><span /> ذخیره روی دستگاه</span>
+      </header>
+
+      <aside className="shell-sidebar">
+        <nav className="shell-navigation" aria-label="پیمایش برنامه">
+          {sections.map((section) => {
+            const destination = destinations[section];
+            const active = currentSection === section ? "page" : undefined;
+            const moreActive = section === "more" && !current.primary ? "location" : undefined;
+            const visibility = section === "more" ? "nav-more" : destination.primary ? "" : "nav-secondary";
+            return (
+              <SectionLink key={section} section={section} navigate={navigate} current={active ?? moreActive} className={`nav-link ${visibility}`}>
+                <Icon name={section} />
+                <span>{destination.label}</span>
+              </SectionLink>
+            );
+          })}
+        </nav>
+      </aside>
+
+      <main id="app-main" className="shell-main">
+        <header className="page-header">
+          <h1 ref={pageTitle} tabIndex={-1}>{current.label}</h1>
+          <p>{current.description}</p>
+        </header>
+
+        <div hidden={currentSection !== "home"} className="home-panel">
+          <section className="quick-actions" aria-labelledby="quick-actions-title">
+            <h2 id="quick-actions-title">کارهای فوری</h2>
+            <div className="action-grid">
+              {quickActions.map((action) => (
+                <SectionLink key={action.section} section={action.section} navigate={navigate} className="action-card">
+                  <span className="action-icon"><Icon name={action.section} /></span>
+                  <span className="action-copy"><strong>{action.label}</strong><span>{action.description}</span></span>
+                  <span className="action-arrow"><Icon name="arrow" /></span>
+                </SectionLink>
+              ))}
+            </div>
+          </section>
+          <PilotReadinessPanel />
+          <section className="principles-card">
+            <h2>یادداشت پایلوت</h2>
+            <p>دفتر کاغذی را در کنار برنامه بررسی کنید و اختلاف‌ها را پیگیری کنید.</p>
+            <SectionLink section="backup" navigate={navigate} className="text-link">دریافت پشتیبان نمایشی</SectionLink>
+          </section>
         </div>
-      </section>
 
-      <nav className="app-navigation" aria-label="پیمایش برنامه">
-        {entryPoints.map((entry) => (
-          <button
-            key={entry.label}
-            type="button"
-            className={currentSection === entry.section ? "entry-card entry-card-active" : "entry-card"}
-            aria-current={currentSection === entry.section ? "page" : undefined}
-            onClick={() => {
-              setCurrentSection(entry.section);
-              if (entry.section === "home") {
-                scrollToHome();
-              } else if (entry.section === "invoices") {
-                scrollToInvoiceManagement();
-              } else if (entry.section === "payments") {
-                scrollToPaymentManagement();
-              } else if (entry.section === "reports") {
-                scrollToReports();
-              } else if (entry.section === "parties") {
-                scrollToPartyManagement();
-              } else if (entry.section === "reconciliation") {
-                scrollToSettlementReview();
-              } else if (entry.section === "backup") {
-                scrollToBackupRestore();
-              }
-            }}
-          >
-            <span className="entry-label">{entry.label}</span>
-            <span className="entry-meta">فعال</span>
-          </button>
-        ))}
-      </nav>
-
-      <section id="home" className="home-panel" aria-labelledby="home-panel-title">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">صفحه اصلی</p>
-            <h2 id="home-panel-title">کارهای فوری</h2>
-          </div>
-        </div>
-
-        <div className="home-action-grid" aria-label="اقدام‌های فوری">
-          {homeActions.map((action) => (
-            <button
-              key={action.label}
-              type="button"
-              className="home-action-card"
-              onClick={() => {
-                setCurrentSection(action.target);
-                if (action.target === "invoices") {
-                  scrollToInvoiceManagement();
-                } else if (action.target === "payments") {
-                  scrollToPaymentManagement();
-                } else if (action.target === "reports") {
-                  scrollToReports();
-                } else if (action.target === "parties") {
-                  scrollToPartyManagement();
-                } else if (action.target === "reconciliation") {
-                  scrollToSettlementReview();
-                } else if (action.target === "backup") {
-                  scrollToBackupRestore();
-                }
-              }}
-            >
-              <span className="entry-label">{action.label}</span>
-              <span className="entry-meta">باز کردن بخش</span>
-            </button>
+        <div hidden={currentSection !== "more"} className="action-grid">
+          {sections.filter((section) => !destinations[section].primary).map((section) => (
+            <SectionLink key={section} section={section} navigate={navigate} className="action-card">
+              <span className="action-icon"><Icon name={section} /></span>
+              <span className="action-copy"><strong>{destinations[section].label}</strong><span>{destinations[section].description}</span></span>
+              <span className="action-arrow"><Icon name="arrow" /></span>
+            </SectionLink>
           ))}
         </div>
 
-        <PilotReadinessPanel />
-      </section>
+        <div hidden={currentSection !== "settings"}>
+          <fieldset className="theme-settings summary-card">
+            <legend>ظاهر برنامه</legend>
+            {themes.map((option) => (
+              <label className="role-option" key={option}>
+                <input type="radio" name="theme" checked={theme === option} onChange={() => selectTheme(option)} />
+                {themeLabels[option]}
+              </label>
+            ))}
+          </fieldset>
+        </div>
 
-      <section className="principles-card" aria-label="یادداشت مرحله">
-        <h2>یادداشت پایلوت</h2>
-        <ul>
-          <li>داده‌ها محلی و آفلاین باقی می‌مانند.</li>
-          <li>برای پایلوت، دفتر کاغذی و برنامه باید هم‌زمان بررسی شوند.</li>
-          <li>اختلاف‌ها باید دیده شوند، نه پنهان.</li>
-          <li>پشتیبان نمایشی برای آموزش و شروع سریع قابل دانلود است.</li>
-        </ul>
-      </section>
+        {/* Keep feature state and existing record event listeners available across sections. */}
+        <div className={`shell-section ${currentSection === "invoices" ? "is-current" : ""}`}><InvoiceManagement onRequestPartyManagement={() => navigate("parties")} /></div>
+        <div className={`shell-section ${currentSection === "payments" ? "is-current" : ""}`}><PaymentManagement /></div>
+        <div className={`shell-section ${currentSection === "parties" ? "is-current" : ""}`}><PartyManagement /></div>
+        <RouteLoadErrorBoundary>
+          <Suspense fallback={<div className="loading-state" role="status">در حال آماده‌سازی بخش…</div>}>
+          {visitedSections.has("reconciliation") ? <div className={`shell-section ${currentSection === "reconciliation" ? "is-current" : ""}`}><SettlementReview /></div> : null}
+          {visitedSections.has("reports") ? <div className={`shell-section ${currentSection === "reports" ? "is-current" : ""}`}><Reports /></div> : null}
+          {visitedSections.has("backup") ? <div className={`shell-section ${currentSection === "backup" ? "is-current" : ""}`}><BackupRestore /></div> : null}
+          </Suspense>
+        </RouteLoadErrorBoundary>
 
-      <SettlementReview />
-
-      <Reports />
-
-      <BackupRestore />
-
-      <InvoiceManagement onRequestPartyManagement={() => {
-        setCurrentSection("parties");
-        scrollToPartyManagement();
-      }} />
-
-      <PaymentManagement />
-
-      <PartyManagement />
-    </main>
+        <div className="legacy-entry-compat" aria-label="دسترسی‌های سازگار">
+          {[
+            ["صفحه اصلی", "home"], ["اشخاص", "parties"], ["فاکتورها", "invoices"], ["ثبت پرداخت", "payments"],
+            ["گزارش‌ها", "reports"], ["مغایرت‌ها", "reconciliation"], ["پشتیبان‌گیری و بازیابی", "backup"]
+          ].map(([label, section]) => <button key={section} type="button" onClick={() => navigate(section as Section)}>{label} فعال</button>)}
+        </div>
+      </main>
+    </div>
   );
 }

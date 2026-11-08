@@ -1,7 +1,6 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it } from "vitest";
-import { PaymentManagement } from "./PaymentManagement";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { TasviehYarDatabase } from "../../db/tasviehyar-db";
 import { createPartyRepository } from "../../services/party-repository";
 import { createInvoiceRepository } from "../../services/invoice-repository";
@@ -39,9 +38,42 @@ function createRepositories() {
 describe("payment management UI", () => {
   afterEach(() => {
     cleanup();
+    vi.useRealTimers();
+  });
+
+  it.each([
+    ["2026-07-10T20:29:59.000Z", "2026-07-10"],
+    ["2026-07-10T20:30:00.000Z", "2026-07-11"]
+  ])("characterizes the default payment date at %s (Tehran date %s)", async (instant, tehranDate) => {
+    const { database, ...repositories } = createRepositories();
+    try {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date(instant));
+      vi.resetModules();
+      const { PaymentManagement } = await import("./PaymentManagement");
+      const formatter = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Tehran", year: "numeric", month: "2-digit", day: "2-digit"
+      });
+      expect(formatter.format(new Date(instant))).toBe(tehranDate);
+
+      const props = { ...repositories, repository: repositories.paymentRepository };
+      const view = render(<PaymentManagement {...props} />);
+      await screen.findByText("پرداختی پیدا نشد.");
+      expect(screen.getByLabelText("تاریخ پرداخت")).toHaveValue(tehranDate);
+
+      view.unmount();
+      vi.setSystemTime(new Date("2026-07-11T09:00:00.000Z"));
+      render(<PaymentManagement {...props} />);
+      await screen.findByText("پرداختی پیدا نشد.");
+      expect(screen.getByLabelText("تاریخ پرداخت")).toHaveValue("2026-07-11");
+    } finally {
+      cleanup();
+      await database.delete();
+    }
   });
 
   it("creates a reported payment and prevents duplicate submission", async () => {
+    const { PaymentManagement } = await import("./PaymentManagement");
     const user = userEvent.setup();
     const { database, partyRepository, invoiceRepository, destinationAccountRepository, paymentInstructionRepository, paymentRepository } =
       createRepositories();
@@ -119,6 +151,7 @@ describe("payment management UI", () => {
 
       expect(await screen.findByText("پرداخت جدید با موفقیت ثبت شد.")).toBeInTheDocument();
       expect(await database.payments.count()).toBe(1);
+      expect((await database.payments.toArray())[0]?.paymentDate).toBe("2026-07-10");
       expect(await database.paymentAllocations.count()).toBe(1);
 
       const paymentRow = await screen.findByRole("button", { name: /زارع/ });

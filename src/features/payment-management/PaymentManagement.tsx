@@ -36,6 +36,7 @@ import { createPaymentInstructionRepository, type PaymentInstructionRepository }
 import { createPaymentRepository, type PaymentRepository } from "../../services/payment-repository";
 import { findDuplicateTrackingReferenceWarnings } from "../../domain/calculations";
 import { paymentMethodValues, paymentVerificationMethodValues, paymentVerificationStatusValues } from "../../domain/schemas";
+import { getTehranBusinessDate } from "../../domain/business-date";
 
 export interface PaymentManagementProps {
   repository?: PaymentRepository;
@@ -68,12 +69,13 @@ type AllocationFormState = {
   allocatedAmountText: string;
 };
 
-const emptyPaymentFormState: PaymentFormState = {
+function createEmptyPaymentFormState(): PaymentFormState {
+  return {
   payerPartyId: "",
   recipientPartyId: "",
   destinationAccountId: "",
   amountText: "",
-  paymentDate: new Date().toISOString().slice(0, 10),
+  paymentDate: getTehranBusinessDate(),
   paymentMethod: "bank_transfer",
   verificationStatus: "reported",
   verificationMethod: "receipt_review",
@@ -83,7 +85,8 @@ const emptyPaymentFormState: PaymentFormState = {
   initialInvoiceId: "",
   initialInstructionId: "",
   initialAllocationAmountText: ""
-};
+  };
+}
 
 const emptyAllocationFormState: AllocationFormState = {
   invoiceId: "",
@@ -235,7 +238,7 @@ export function PaymentManagement({
   const [destinationAccounts, setDestinationAccounts] = useState<DestinationAccount[]>([]);
   const [instructions, setInstructions] = useState<PaymentInstruction[]>([]);
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
-  const [formState, setFormState] = useState<PaymentFormState>(emptyPaymentFormState);
+  const [formState, setFormState] = useState<PaymentFormState>(createEmptyPaymentFormState);
   const [allocationFormState, setAllocationFormState] = useState<AllocationFormState>(emptyAllocationFormState);
   const [filter, setFilter] = useState<PaymentListFilter>({
     query: "",
@@ -315,7 +318,7 @@ export function PaymentManagement({
       return;
     }
 
-    setFormState(emptyPaymentFormState);
+    setFormState(createEmptyPaymentFormState());
     setAllocationFormState(emptyAllocationFormState);
   }, [selectedPayment]);
 
@@ -583,7 +586,7 @@ export function PaymentManagement({
     }
 
     setSelectedPaymentId(null);
-    setFormState(emptyPaymentFormState);
+    setFormState(createEmptyPaymentFormState());
     setAllocationFormState(emptyAllocationFormState);
     setNotice(null);
     setError(null);
@@ -900,7 +903,7 @@ export function PaymentManagement({
               </div>
             )}
 
-            <div className="form-actions">
+            <div className="form-actions form-actions-sticky">
               <button
                 type="submit"
                 className="primary-button"

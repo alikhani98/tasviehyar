@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import type { DestinationAccount, Invoice, Payment, PaymentAllocation, PaymentInstruction, Party } from "../../domain";
 import { formatInvoiceAmount, formatInvoiceDate } from "../../domain/invoices";
 import { normalizePartyText, partyRoleLabels } from "../../domain/parties";
@@ -51,7 +52,7 @@ type LifecycleFilter = "all" | "active" | "cancelled";
 type PaymentLifecycleFilter = "all" | "active" | "cancelled" | "reversed";
 type SettlementFilter = "all" | "unpaid" | "partially_paid" | "provisionally_paid" | "fully_settled" | "overpaid" | "needs_review";
 type ReconciliationSeverityFilter = "all" | "high" | "medium" | "low";
-type ReconciliationTypeFilter = "all" | "unallocated_payment" | "disputed_payment" | "duplicate_tracking_reference" | "probable_duplicate_payment" | "instruction_overpayment" | "invoice_overpayment" | "recipient_mismatch" | "destination_account_owner_mismatch" | "active_instruction_without_destination_account" | "reported_payment_awaiting_confirmation";
+type ReconciliationTypeFilter = "all" | "unallocated_payment" | "disputed_payment" | "duplicate_tracking_reference" | "probable_duplicate_payment" | "instruction_overpayment" | "invoice_overpayment" | "cancelled_instruction_allocation" | "recipient_mismatch" | "destination_account_owner_mismatch" | "active_instruction_without_destination_account" | "reported_payment_awaiting_confirmation";
 type AllocationStateFilter = "all" | "allocated" | "unallocated";
 
 type ReportFilters = {
@@ -80,6 +81,36 @@ type ReportFilters = {
   reconciliationQuery: string;
   statementPartyId: string;
 };
+
+function openReportRecord(section: "parties" | "payments", recordId: string): void {
+  window.dispatchEvent(new CustomEvent("tasviehyar-open-record", { detail: { section, recordId } }));
+}
+
+function MobileReportCard({
+  title,
+  status,
+  emphasis,
+  children,
+  action
+}: {
+  title: string;
+  status?: string;
+  emphasis?: string;
+  children: ReactNode;
+  action?: { label: string; onClick: () => void };
+}) {
+  return (
+    <article className="mobile-report-card">
+      <div className="mobile-report-card-header">
+        <strong>{title}</strong>
+        {status ? <span className="status-pill status-active">{status}</span> : null}
+      </div>
+      {emphasis ? <p className="mobile-report-emphasis">{emphasis}</p> : null}
+      <div className="mobile-report-details">{children}</div>
+      {action ? <button type="button" className="tertiary-button" onClick={action.onClick}>{action.label}</button> : null}
+    </article>
+  );
+}
 
 const defaultFilters: ReportFilters = {
   dateFrom: "",
@@ -1045,6 +1076,22 @@ export function Reports({
             ))}
           </tbody>
         </table>
+        <div className="mobile-report-cards" aria-label="خلاصه مشتریان برای گوشی">
+          {customerSummaryRows.map((row) => (
+            <MobileReportCard
+              key={row.partyId}
+              title={row.customerName}
+              status={settlementLabelText(row.settlementState)}
+              emphasis={`مانده قطعی: ${formatInvoiceAmount(row.confirmedOutstanding)}`}
+              action={{ label: "مشاهده شخص", onClick: () => openReportRecord("parties", row.partyId) }}
+            >
+              <span>کل فاکتورها: {formatInvoiceAmount(row.totalInvoiced)}</span>
+              <span>تخصیص قطعی: {formatInvoiceAmount(row.confirmedAllocated)}</span>
+              <span>مانده پیش‌بینی: {formatInvoiceAmount(row.provisionalOutstanding)}</span>
+              <span>فاکتور باز: {row.openInvoiceCount.toLocaleString("fa-IR")}</span>
+            </MobileReportCard>
+          ))}
+        </div>
       </div>
     );
   }
@@ -1087,6 +1134,22 @@ export function Reports({
             ))}
           </tbody>
         </table>
+        <div className="mobile-report-cards" aria-label="پرداخت‌ها برای گوشی">
+          {paymentRows.map((row) => (
+            <MobileReportCard
+              key={row.paymentId}
+              title={`${row.payerName} ← ${row.recipientName}`}
+              status={row.verificationState}
+              emphasis={formatInvoiceAmount(row.amount)}
+              action={{ label: "مشاهده پرداخت", onClick: () => openReportRecord("payments", row.paymentId) }}
+            >
+              <span>تاریخ: {formatInvoiceDate(row.paymentDate)}</span>
+              <span>روش: {row.method}</span>
+              <span>تخصیص: {formatInvoiceAmount(row.allocatedAmount)}</span>
+              <span>بدون تخصیص: {formatInvoiceAmount(row.unallocatedAmount)}</span>
+            </MobileReportCard>
+          ))}
+        </div>
       </div>
     );
   }
@@ -1131,6 +1194,20 @@ export function Reports({
             ))}
           </tbody>
         </table>
+        <div className="mobile-report-cards" aria-label="مغایرت‌ها برای گوشی">
+          {reconciliationRows.map((row) => (
+            <MobileReportCard
+              key={row.issueId}
+              title={row.mismatchType}
+              status={row.severity === "high" ? "بالا" : row.severity === "medium" ? "متوسط" : "کم"}
+              emphasis={row.explanation}
+            >
+              <span>شخص: {row.person}</span>
+              <span>مرجع: {row.reference}</span>
+              <span>تاریخ: {row.relevantDate ? formatInvoiceDate(row.relevantDate) : "—"}</span>
+            </MobileReportCard>
+          ))}
+        </div>
       </div>
     );
   }
@@ -1280,7 +1357,8 @@ export function Reports({
             <h3>{partyStatement.customerSection.title}</h3>
             <p className="detail-copy">{partyStatement.customerSection.summary}</p>
             {partyStatement.customerSection.invoiceRows?.length ? (
-              <table className="report-table">
+              <>
+                <table className="report-table">
                 <thead>
                   <tr>
                     <th>فاکتور</th>
@@ -1303,7 +1381,22 @@ export function Reports({
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+                <div className="mobile-report-cards" aria-label="فاکتورهای گردش حساب برای گوشی">
+                  {partyStatement.customerSection.invoiceRows.map((row) => (
+                    <MobileReportCard
+                      key={`mobile-${row.invoiceReference}-${row.invoiceDate}`}
+                      title={row.invoiceReference}
+                      status={settlementLabelText(row.settlementState)}
+                      emphasis={`مانده قطعی: ${formatInvoiceAmount(row.confirmedOutstanding)}`}
+                    >
+                      <span>تاریخ: {formatInvoiceDate(row.invoiceDate)}</span>
+                      <span>مبلغ: {formatInvoiceAmount(row.totalAmount)}</span>
+                      <span>مانده پیش‌بینی: {formatInvoiceAmount(row.provisionalOutstanding)}</span>
+                    </MobileReportCard>
+                  ))}
+                </div>
+              </>
             ) : null}
           </section>
         )}
@@ -1312,7 +1405,8 @@ export function Reports({
             <h3>{partyStatement.recipientSection.title}</h3>
             <p className="detail-copy">{partyStatement.recipientSection.summary}</p>
             {partyStatement.recipientSection.instructionRows?.length ? (
-              <table className="report-table">
+              <>
+                <table className="report-table">
                 <thead>
                   <tr>
                     <th>فاکتور</th>
@@ -1339,7 +1433,23 @@ export function Reports({
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+                <div className="mobile-report-cards" aria-label="دستورهای گردش حساب برای گوشی">
+                  {partyStatement.recipientSection.instructionRows.map((row) => (
+                    <MobileReportCard
+                      key={`mobile-${row.invoiceReference}-${row.destinationAccountLabel}-${row.instructedAmount}`}
+                      title={row.invoiceReference}
+                      status={row.lifecycleState === "active" ? "فعال" : "لغوشده"}
+                      emphasis={`مانده قطعی: ${formatInvoiceAmount(row.confirmedRemaining)}`}
+                      action={{ label: "مشاهده فاکتور", onClick: () => openInvoiceRecord(row.invoiceId) }}
+                    >
+                      <span>گیرنده: {row.recipientName}</span>
+                      <span>حساب مقصد: {row.destinationAccountLabel}</span>
+                      <span>مبلغ دستور: {formatInvoiceAmount(row.instructedAmount)}</span>
+                    </MobileReportCard>
+                  ))}
+                </div>
+              </>
             ) : null}
           </section>
         )}
@@ -1606,6 +1716,7 @@ export function Reports({
                 <option value="probable_duplicate_payment">پرداخت مشابه</option>
                 <option value="instruction_overpayment">بیش‌پرداخت دستور</option>
                 <option value="invoice_overpayment">بیش‌پرداخت فاکتور</option>
+                <option value="cancelled_instruction_allocation">تخصیص به دستور لغوشده</option>
                 <option value="recipient_mismatch">ناهمخوانی گیرنده</option>
                 <option value="destination_account_owner_mismatch">مالک حساب مقصد</option>
                 <option value="active_instruction_without_destination_account">دستور بدون حساب مقصد</option>

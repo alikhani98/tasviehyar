@@ -11,20 +11,6 @@ import { formatInvoiceAmount } from "./invoices";
 
 type InvoiceSettlementBase = ReturnType<typeof summarizeInvoiceSettlement>;
 
-function buildAllocationsByInstruction(allocations: readonly PaymentAllocation[]): Map<string, PaymentAllocation[]> {
-  const grouped = new Map<string, PaymentAllocation[]>();
-  for (const allocation of allocations) {
-    if (!allocation.paymentInstructionId) {
-      continue;
-    }
-
-    const existing = grouped.get(allocation.paymentInstructionId) ?? [];
-    existing.push(allocation);
-    grouped.set(allocation.paymentInstructionId, existing);
-  }
-  return grouped;
-}
-
 export type SettlementSeverity = "low" | "medium" | "high";
 
 export type SettlementMismatchType =
@@ -34,6 +20,7 @@ export type SettlementMismatchType =
   | "probable_duplicate_payment"
   | "instruction_overpayment"
   | "invoice_overpayment"
+  | "cancelled_instruction_allocation"
   | "recipient_mismatch"
   | "destination_account_owner_mismatch"
   | "active_instruction_without_destination_account"
@@ -125,53 +112,10 @@ export function summarizeInvoiceBalance(
   allocations: readonly PaymentAllocation[]
 ): InvoiceSettlementDetails {
   const base = summarizeInvoiceSettlement(invoice, instructions, payments, allocations);
-  const paymentById = new Map(payments.map((payment) => [payment.id, payment] as const));
   const activeInstructions = instructions.filter((instruction) => instruction.lifecycleStatus === "active");
-  const allocationsByInstruction = buildAllocationsByInstruction(allocations);
-
-  const instructionSettlements = activeInstructions.map((instruction) => {
-    const instructionAllocations = allocationsByInstruction.get(instruction.id) ?? [];
-    const confirmedAllocatedAmount = sumMoney(
-      instructionAllocations
-        .filter((allocation) => {
-          const payment = paymentById.get(allocation.paymentId);
-          return payment?.lifecycleStatus === "active" && payment.verificationStatus === "confirmed";
-        })
-        .map((allocation) => allocation.allocatedAmount)
-    );
-    const reportedButUnconfirmedAmount = sumMoney(
-      instructionAllocations
-        .filter((allocation) => {
-          const payment = paymentById.get(allocation.paymentId);
-          return payment?.lifecycleStatus === "active" && payment.verificationStatus === "reported";
-        })
-        .map((allocation) => allocation.allocatedAmount)
-    );
-    const provisionalAllocatedAmount = confirmedAllocatedAmount + reportedButUnconfirmedAmount;
-    const confirmedRemainingAmount = Math.max(0, instruction.instructedAmount - confirmedAllocatedAmount);
-    const provisionalRemainingAmount = Math.max(0, instruction.instructedAmount - provisionalAllocatedAmount);
-    const overpaidAmount = Math.max(0, provisionalAllocatedAmount - instruction.instructedAmount);
-
-    return {
-      instructionId: instruction.id,
-      recipientPartyId: instruction.recipientPartyId,
-      instructedAmount: instruction.instructedAmount,
-      confirmedAllocatedAmount,
-      provisionalAllocatedAmount,
-      confirmedRemainingAmount,
-      provisionalRemainingAmount,
-      overpaidAmount
-    };
-  });
-
   const activeInstructedTotal = sumMoney(activeInstructions.map((instruction) => instruction.instructedAmount));
-  const confirmedAllocatedAmount = sumMoney(instructionSettlements.map((instruction) => instruction.confirmedAllocatedAmount));
-  const reportedAllocatedAmount = sumMoney(
-    instructionSettlements.map((instruction) => instruction.provisionalAllocatedAmount - instruction.confirmedAllocatedAmount)
-  );
-  const provisionalAllocatedAmount = confirmedAllocatedAmount + reportedAllocatedAmount;
-  const confirmedOutstandingAmount = Math.max(0, invoice.totalAmount - confirmedAllocatedAmount);
-  const provisionalOutstandingAmount = Math.max(0, invoice.totalAmount - provisionalAllocatedAmount);
+  const { confirmedAllocatedAmount, provisionalAllocatedAmount, confirmedOutstandingAmount, provisionalOutstandingAmount } = base;
+  const reportedAllocatedAmount = provisionalAllocatedAmount - confirmedAllocatedAmount;
   const overpaymentAmount = Math.max(0, provisionalAllocatedAmount - invoice.totalAmount);
 
   return {
@@ -185,13 +129,7 @@ export function summarizeInvoiceBalance(
     activeInstructedTotal,
     reportedAllocatedAmount,
     overpaymentAmount,
-    derivedSettlementLabel: deriveInvoiceSettlementState({
-      confirmedOutstandingAmount,
-      provisionalOutstandingAmount,
-      confirmedAllocatedAmount,
-      provisionalAllocatedAmount,
-      warnings: base.warnings
-    })
+    derivedSettlementLabel: deriveInvoiceSettlementState(base)
   };
 }
 
@@ -486,6 +424,28 @@ export function deriveSettlementReviewItems(args: {
         searchText: [instruction.id, instruction.note ?? ""].join(" ")
       });
     }
+  }
+
+  for (const instruction of args.instructions.filter((entry) => entry.lifecycleStatus === "cancelled")) {
+    const retainedAllocations = args.allocations.filter((allocation) => allocation.paymentInstructionId === instruction.id);
+    if (retainedAllocations.length === 0) {
+      continue;
+    }
+
+    const invoice = args.invoices.find((entry) => entry.id === instruction.invoiceId);
+    items.push({
+      id: `cancelled_instruction_allocation:${instruction.id}`,
+      mismatchType: "cancelled_instruction_allocation",
+      severity: "high",
+      title: "تخصیص به دستور لغوشده",
+      explanation: `تخصیص‌های ثبت‌شده برای دستور لغوشده «${instruction.id}» همچنان به فاکتور ${invoice?.referenceNumber ?? instruction.invoiceId} وابسته‌اند و نیاز به بررسی دارند.`,
+      invoiceId: instruction.invoiceId,
+      invoiceReference: invoice?.referenceNumber ?? instruction.invoiceId,
+      instructionId: instruction.id,
+      ...(instruction.note ? { instructionLabel: instruction.note } : {}),
+      navigation: { section: "invoices", recordId: instruction.invoiceId },
+      searchText: [instruction.id, instruction.invoiceId, invoice?.referenceNumber ?? ""].join(" ")
+    });
   }
 
   for (const payment of args.payments) {

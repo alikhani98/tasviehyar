@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { TasviehYarDatabase } from "../../db/tasviehyar-db";
 import { buildBackupEnvelopeWithoutChecksum, digestBackupEnvelope } from "../../domain/backup";
 import { createDestinationAccountRepository } from "../destination-account-repository";
@@ -193,6 +193,39 @@ describe("backup service", () => {
     expect(await targetDatabase.paymentVerifications.count()).toBe(1);
     expect(await targetDatabase.auditEvents.count()).toBe(8);
     expect((await targetService.getHistorySummary()).lastRestore).not.toBeNull();
+
+    targetDatabase.close();
+    const reopened = new TasviehYarDatabase(targetDatabase.name);
+    try {
+      await reopened.open();
+      expect(reopened.verno).toBe(3);
+      expect(exported.preview.backupFormatVersion).toBe(1);
+      expect((await createService(reopened).exportBackup()).text).toBe(exported.text);
+    } finally {
+      reopened.close();
+    }
+  });
+
+  it("rolls back replace-all restore if a table write fails", async () => {
+    const sourceDatabase = createDatabase("rollback-source");
+    const targetDatabase = createDatabase("rollback-target");
+    const targetService = createService(targetDatabase);
+    await seedRichDatabase(sourceDatabase);
+    await seedRichDatabase(targetDatabase);
+    const incoming = await createService(sourceDatabase).exportBackup();
+    const before = await targetService.exportBackup();
+    expect(incoming.checksum).not.toBe(before.checksum);
+
+    const write = vi.spyOn(targetDatabase.auditEvents, "bulkPut")
+      .mockRejectedValueOnce(new Error("synthetic audit write failure"));
+    try {
+      await expect(targetService.restoreBackupText(incoming.text)).rejects.toThrow("synthetic audit write failure");
+      expect(write).toHaveBeenCalledOnce();
+      expect((await targetService.exportBackup()).text).toBe(before.text);
+      expect(targetService.getHistorySummary().lastRestore).toBeNull();
+    } finally {
+      write.mockRestore();
+    }
   });
 
   it("exports a ready-made demo backup without mutating the live database", async () => {

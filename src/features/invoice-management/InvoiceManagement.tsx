@@ -538,7 +538,7 @@ export function InvoiceManagement({
               </div>
             )}
 
-            <div className="form-actions">
+            <div className="form-actions form-actions-sticky">
               <button type="submit" className="primary-button" disabled={!canSave}>
                 {selectedInvoice ? "ذخیره تغییرات" : "ثبت فاکتور"}
               </button>

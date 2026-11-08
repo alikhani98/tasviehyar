@@ -49,7 +49,7 @@ describe("App shell", () => {
 
     expect(window.location.hash).toBe("#/backup");
     expect(menu.getByRole("heading", { name: "پشتیبان‌گیری", level: 1 })).toHaveFocus();
-    expect(menu.getByRole("heading", { name: "پشتیبان‌گیری و بازیابی" })).toBeVisible();
+    expect(await menu.findByRole("heading", { name: "پشتیبان‌گیری و بازیابی" })).toBeVisible();
     expect(navigation().getByRole("link", { name: "پشتیبان‌گیری" })).toHaveAttribute("aria-current", "page");
     expect(navigation().getByRole("link", { name: "بیشتر" })).toHaveAttribute("aria-current", "location");
     expect(screen.queryByRole("heading", { name: "کارهای فوری" })).not.toBeInTheDocument();

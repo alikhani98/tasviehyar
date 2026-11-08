@@ -135,6 +135,8 @@ describe("reports", () => {
     const previewStrip = screen.getByLabelText("پیش‌نمایش گزارش");
     expect(within(previewStrip).getByText(/ردیف‌ها:/)).toHaveTextContent("۱");
     expect(screen.getAllByText("۱۲۵٬۰۰۰ تومان").length).toBeGreaterThan(0);
+    expect(screen.getByLabelText("خلاصه مشتریان برای گوشی")).toBeInTheDocument();
+    expect(within(screen.getByLabelText("خلاصه مشتریان برای گوشی")).getByRole("button", { name: "مشاهده شخص" })).toBeEnabled();
 
     window.dispatchEvent(new CustomEvent("tasviehyar-open-record", { detail: { section: "reports", recordId: party.id } }));
 

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import type { DestinationAccount, Invoice, Payment, PaymentAllocation, PaymentInstruction, Party } from "../../domain";
 import { formatInvoiceAmount, formatInvoiceDate } from "../../domain/invoices";
 import { normalizePartyText, partyRoleLabels } from "../../domain/parties";
@@ -80,6 +81,36 @@ type ReportFilters = {
   reconciliationQuery: string;
   statementPartyId: string;
 };
+
+function openReportRecord(section: "parties" | "payments", recordId: string): void {
+  window.dispatchEvent(new CustomEvent("tasviehyar-open-record", { detail: { section, recordId } }));
+}
+
+function MobileReportCard({
+  title,
+  status,
+  emphasis,
+  children,
+  action
+}: {
+  title: string;
+  status?: string;
+  emphasis?: string;
+  children: ReactNode;
+  action?: { label: string; onClick: () => void };
+}) {
+  return (
+    <article className="mobile-report-card">
+      <div className="mobile-report-card-header">
+        <strong>{title}</strong>
+        {status ? <span className="status-pill status-active">{status}</span> : null}
+      </div>
+      {emphasis ? <p className="mobile-report-emphasis">{emphasis}</p> : null}
+      <div className="mobile-report-details">{children}</div>
+      {action ? <button type="button" className="tertiary-button" onClick={action.onClick}>{action.label}</button> : null}
+    </article>
+  );
+}
 
 const defaultFilters: ReportFilters = {
   dateFrom: "",
@@ -1045,6 +1076,22 @@ export function Reports({
             ))}
           </tbody>
         </table>
+        <div className="mobile-report-cards" aria-label="خلاصه مشتریان برای گوشی">
+          {customerSummaryRows.map((row) => (
+            <MobileReportCard
+              key={row.partyId}
+              title={row.customerName}
+              status={settlementLabelText(row.settlementState)}
+              emphasis={`مانده قطعی: ${formatInvoiceAmount(row.confirmedOutstanding)}`}
+              action={{ label: "مشاهده شخص", onClick: () => openReportRecord("parties", row.partyId) }}
+            >
+              <span>کل فاکتورها: {formatInvoiceAmount(row.totalInvoiced)}</span>
+              <span>تخصیص قطعی: {formatInvoiceAmount(row.confirmedAllocated)}</span>
+              <span>مانده پیش‌بینی: {formatInvoiceAmount(row.provisionalOutstanding)}</span>
+              <span>فاکتور باز: {row.openInvoiceCount.toLocaleString("fa-IR")}</span>
+            </MobileReportCard>
+          ))}
+        </div>
       </div>
     );
   }
@@ -1087,6 +1134,22 @@ export function Reports({
             ))}
           </tbody>
         </table>
+        <div className="mobile-report-cards" aria-label="پرداخت‌ها برای گوشی">
+          {paymentRows.map((row) => (
+            <MobileReportCard
+              key={row.paymentId}
+              title={`${row.payerName} ← ${row.recipientName}`}
+              status={row.verificationState}
+              emphasis={formatInvoiceAmount(row.amount)}
+              action={{ label: "مشاهده پرداخت", onClick: () => openReportRecord("payments", row.paymentId) }}
+            >
+              <span>تاریخ: {formatInvoiceDate(row.paymentDate)}</span>
+              <span>روش: {row.method}</span>
+              <span>تخصیص: {formatInvoiceAmount(row.allocatedAmount)}</span>
+              <span>بدون تخصیص: {formatInvoiceAmount(row.unallocatedAmount)}</span>
+            </MobileReportCard>
+          ))}
+        </div>
       </div>
     );
   }
@@ -1131,6 +1194,20 @@ export function Reports({
             ))}
           </tbody>
         </table>
+        <div className="mobile-report-cards" aria-label="مغایرت‌ها برای گوشی">
+          {reconciliationRows.map((row) => (
+            <MobileReportCard
+              key={row.issueId}
+              title={row.mismatchType}
+              status={row.severity === "high" ? "بالا" : row.severity === "medium" ? "متوسط" : "کم"}
+              emphasis={row.explanation}
+            >
+              <span>شخص: {row.person}</span>
+              <span>مرجع: {row.reference}</span>
+              <span>تاریخ: {row.relevantDate ? formatInvoiceDate(row.relevantDate) : "—"}</span>
+            </MobileReportCard>
+          ))}
+        </div>
       </div>
     );
   }

@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { InvoiceManagement } from "./features/invoice-management/InvoiceManagement";
-import { BackupRestore } from "./features/backup-restore/BackupRestore";
 import { PilotReadinessPanel } from "./features/pilot-readiness/PilotReadinessPanel";
 import { PaymentManagement } from "./features/payment-management/PaymentManagement";
 import { PartyManagement } from "./features/party-management/PartyManagement";
-import { Reports } from "./features/reports/Reports";
-import { SettlementReview } from "./features/settlement-review/SettlementReview";
 import { destinations, isSection, type Section, sections } from "./shell/destinations";
 import { Icon, SectionLink } from "./shell/navigation";
 import { type Theme, themes, useTheme } from "./shell/theme";
+
+const BackupRestore = lazy(() => import("./features/backup-restore/BackupRestore").then(({ BackupRestore: component }) => ({ default: component })));
+const Reports = lazy(() => import("./features/reports/Reports").then(({ Reports: component }) => ({ default: component })));
+const SettlementReview = lazy(() => import("./features/settlement-review/SettlementReview").then(({ SettlementReview: component }) => ({ default: component })));
 
 const quickActions = [
   { section: "invoices", label: "ثبت فاکتور", description: "فاکتور جدید و مانده مشتری" },
@@ -29,13 +30,15 @@ export function App() {
   const { theme, selectTheme } = useTheme();
   const pageTitle = useRef<HTMLHeadingElement>(null);
   const previousSection = useRef(currentSection);
+  const scrollPositions = useRef<Partial<Record<Section, number>>>({});
 
   const navigate = useCallback((section: Section) => {
     if (readSection() !== section) {
+      scrollPositions.current[currentSection] = window.scrollY;
       window.history.pushState(null, "", `#/${section}`);
     }
     setCurrentSection(section);
-  }, []);
+  }, [currentSection]);
 
   useEffect(() => {
     function syncSection() {
@@ -60,7 +63,7 @@ export function App() {
   useLayoutEffect(() => {
     if (previousSection.current !== currentSection) {
       pageTitle.current?.focus({ preventScroll: true });
-      window.scrollTo(0, 0);
+      window.scrollTo({ top: scrollPositions.current[currentSection] ?? 0, behavior: "auto" });
       previousSection.current = currentSection;
     }
   }, [currentSection]);
@@ -152,9 +155,11 @@ export function App() {
         <div className={`shell-section ${currentSection === "invoices" ? "is-current" : ""}`}><InvoiceManagement onRequestPartyManagement={() => navigate("parties")} /></div>
         <div className={`shell-section ${currentSection === "payments" ? "is-current" : ""}`}><PaymentManagement /></div>
         <div className={`shell-section ${currentSection === "parties" ? "is-current" : ""}`}><PartyManagement /></div>
-        <div className={`shell-section ${currentSection === "reconciliation" ? "is-current" : ""}`}><SettlementReview /></div>
-        <div className={`shell-section ${currentSection === "reports" ? "is-current" : ""}`}><Reports /></div>
-        <div className={`shell-section ${currentSection === "backup" ? "is-current" : ""}`}><BackupRestore /></div>
+        <Suspense fallback={<div className="loading-state" role="status">در حال آماده‌سازی بخش…</div>}>
+          {currentSection === "reconciliation" ? <SettlementReview /> : null}
+          {currentSection === "reports" ? <Reports /> : null}
+          {currentSection === "backup" ? <BackupRestore /> : null}
+        </Suspense>
 
         <div className="legacy-entry-compat" aria-label="دسترسی‌های سازگار">
           {[

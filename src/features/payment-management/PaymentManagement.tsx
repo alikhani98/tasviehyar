@@ -903,7 +903,7 @@ export function PaymentManagement({
               </div>
             )}
 
-            <div className="form-actions">
+            <div className="form-actions form-actions-sticky">
               <button
                 type="submit"
                 className="primary-button"

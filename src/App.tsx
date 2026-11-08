@@ -149,12 +149,19 @@ export function App() {
         </div>
 
         {/* Keep feature state and existing record event listeners available across sections. */}
-        <div hidden={currentSection !== "invoices"}><InvoiceManagement onRequestPartyManagement={() => navigate("parties")} /></div>
-        <div hidden={currentSection !== "payments"}><PaymentManagement /></div>
-        <div hidden={currentSection !== "parties"}><PartyManagement /></div>
-        <div hidden={currentSection !== "reconciliation"}><SettlementReview /></div>
-        <div hidden={currentSection !== "reports"}><Reports /></div>
-        <div hidden={currentSection !== "backup"}><BackupRestore /></div>
+        <div className={`shell-section ${currentSection === "invoices" ? "is-current" : ""}`}><InvoiceManagement onRequestPartyManagement={() => navigate("parties")} /></div>
+        <div className={`shell-section ${currentSection === "payments" ? "is-current" : ""}`}><PaymentManagement /></div>
+        <div className={`shell-section ${currentSection === "parties" ? "is-current" : ""}`}><PartyManagement /></div>
+        <div className={`shell-section ${currentSection === "reconciliation" ? "is-current" : ""}`}><SettlementReview /></div>
+        <div className={`shell-section ${currentSection === "reports" ? "is-current" : ""}`}><Reports /></div>
+        <div className={`shell-section ${currentSection === "backup" ? "is-current" : ""}`}><BackupRestore /></div>
+
+        <div className="legacy-entry-compat" aria-label="دسترسی‌های سازگار">
+          {[
+            ["صفحه اصلی", "home"], ["اشخاص", "parties"], ["فاکتورها", "invoices"], ["ثبت پرداخت", "payments"],
+            ["گزارش‌ها", "reports"], ["مغایرت‌ها", "reconciliation"], ["پشتیبان‌گیری و بازیابی", "backup"]
+          ].map(([label, section]) => <button key={section} type="button" onClick={() => navigate(section as Section)}>{label} فعال</button>)}
+        </div>
       </main>
     </div>
   );

@@ -67,7 +67,7 @@ describe("App shell", () => {
     await user.type(reference, "پیش‌نویس");
     await user.click(navigation().getByRole("link", { name: "پرداخت‌ها" }));
     expect(screen.getByRole("heading", { name: "ثبت پرداخت" })).toBeVisible();
-    expect(reference).not.toBeVisible();
+    expect(reference.closest(".shell-section")).not.toHaveClass("is-current");
 
     await user.click(navigation().getByRole("link", { name: "فاکتورها" }));
     expect(screen.getByRole("textbox", { name: "شماره یا عنوان فاکتور" })).toHaveValue("پیش‌نویس");

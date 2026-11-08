@@ -1,6 +1,6 @@
 /* global URL, Response, caches, fetch, self */
-const CACHE_NAME = "tasviehyar-shell-v3";
-const PRECACHE_URLS = ["/", "/index.html", "/manifest.webmanifest", "/icon.svg"];
+const CACHE_NAME = "tasviehyar-shell-v4";
+const PRECACHE_URLS = ["/", "/index.html", "/manifest.webmanifest", "/icon.svg", "/icon-192.png", "/icon-512.png"];
 
 function isCacheableRequest(request) {
   const url = new URL(request.url);

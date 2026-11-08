@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Component, lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { InvoiceManagement } from "./features/invoice-management/InvoiceManagement";
 import { PilotReadinessPanel } from "./features/pilot-readiness/PilotReadinessPanel";
 import { PaymentManagement } from "./features/payment-management/PaymentManagement";
@@ -10,6 +10,25 @@ import { type Theme, themes, useTheme } from "./shell/theme";
 const BackupRestore = lazy(() => import("./features/backup-restore/BackupRestore").then(({ BackupRestore: component }) => ({ default: component })));
 const Reports = lazy(() => import("./features/reports/Reports").then(({ Reports: component }) => ({ default: component })));
 const SettlementReview = lazy(() => import("./features/settlement-review/SettlementReview").then(({ SettlementReview: component }) => ({ default: component })));
+
+class RouteLoadErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  override state = { hasError: false };
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true };
+  }
+
+  override render() {
+    if (this.state.hasError) {
+      return (
+        <div className="notice notice-error" role="alert">
+          این بخش در دسترس نیست. پس از اتصال دوباره، صفحه را تازه‌سازی کنید.
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const quickActions = [
   { section: "invoices", label: "ثبت فاکتور", description: "فاکتور جدید و مانده مشتری" },
@@ -161,11 +180,13 @@ export function App() {
         <div className={`shell-section ${currentSection === "invoices" ? "is-current" : ""}`}><InvoiceManagement onRequestPartyManagement={() => navigate("parties")} /></div>
         <div className={`shell-section ${currentSection === "payments" ? "is-current" : ""}`}><PaymentManagement /></div>
         <div className={`shell-section ${currentSection === "parties" ? "is-current" : ""}`}><PartyManagement /></div>
-        <Suspense fallback={<div className="loading-state" role="status">در حال آماده‌سازی بخش…</div>}>
+        <RouteLoadErrorBoundary>
+          <Suspense fallback={<div className="loading-state" role="status">در حال آماده‌سازی بخش…</div>}>
           {visitedSections.has("reconciliation") ? <div className={`shell-section ${currentSection === "reconciliation" ? "is-current" : ""}`}><SettlementReview /></div> : null}
           {visitedSections.has("reports") ? <div className={`shell-section ${currentSection === "reports" ? "is-current" : ""}`}><Reports /></div> : null}
           {visitedSections.has("backup") ? <div className={`shell-section ${currentSection === "backup" ? "is-current" : ""}`}><BackupRestore /></div> : null}
-        </Suspense>
+          </Suspense>
+        </RouteLoadErrorBoundary>
 
         <div className="legacy-entry-compat" aria-label="دسترسی‌های سازگار">
           {[

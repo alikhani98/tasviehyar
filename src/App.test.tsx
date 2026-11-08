@@ -130,4 +130,18 @@ describe("App shell", () => {
     device.dispatchEvent(new Event("change"));
     expect(document.documentElement).toHaveAttribute("data-theme", "dark");
   });
+
+  it("restores the section scroll position when returning with browser navigation", async () => {
+    const user = userEvent.setup();
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
+    Object.defineProperty(window, "scrollY", { configurable: true, value: 240, writable: true });
+    render(<App />);
+
+    await user.click(navigation().getByRole("link", { name: "فاکتورها" }));
+    Object.defineProperty(window, "scrollY", { configurable: true, value: 680, writable: true });
+    await user.click(navigation().getByRole("link", { name: "پرداخت‌ها" }));
+    await user.click(navigation().getByRole("link", { name: "فاکتورها" }));
+
+    expect(scrollTo).toHaveBeenLastCalledWith({ top: 680, behavior: "auto" });
+  });
 });

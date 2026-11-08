@@ -1357,7 +1357,8 @@ export function Reports({
             <h3>{partyStatement.customerSection.title}</h3>
             <p className="detail-copy">{partyStatement.customerSection.summary}</p>
             {partyStatement.customerSection.invoiceRows?.length ? (
-              <table className="report-table">
+              <>
+                <table className="report-table">
                 <thead>
                   <tr>
                     <th>فاکتور</th>
@@ -1380,7 +1381,22 @@ export function Reports({
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+                <div className="mobile-report-cards" aria-label="فاکتورهای گردش حساب برای گوشی">
+                  {partyStatement.customerSection.invoiceRows.map((row) => (
+                    <MobileReportCard
+                      key={`mobile-${row.invoiceReference}-${row.invoiceDate}`}
+                      title={row.invoiceReference}
+                      status={settlementLabelText(row.settlementState)}
+                      emphasis={`مانده قطعی: ${formatInvoiceAmount(row.confirmedOutstanding)}`}
+                    >
+                      <span>تاریخ: {formatInvoiceDate(row.invoiceDate)}</span>
+                      <span>مبلغ: {formatInvoiceAmount(row.totalAmount)}</span>
+                      <span>مانده پیش‌بینی: {formatInvoiceAmount(row.provisionalOutstanding)}</span>
+                    </MobileReportCard>
+                  ))}
+                </div>
+              </>
             ) : null}
           </section>
         )}
@@ -1389,7 +1405,8 @@ export function Reports({
             <h3>{partyStatement.recipientSection.title}</h3>
             <p className="detail-copy">{partyStatement.recipientSection.summary}</p>
             {partyStatement.recipientSection.instructionRows?.length ? (
-              <table className="report-table">
+              <>
+                <table className="report-table">
                 <thead>
                   <tr>
                     <th>فاکتور</th>
@@ -1416,7 +1433,23 @@ export function Reports({
                     </tr>
                   ))}
                 </tbody>
-              </table>
+                </table>
+                <div className="mobile-report-cards" aria-label="دستورهای گردش حساب برای گوشی">
+                  {partyStatement.recipientSection.instructionRows.map((row) => (
+                    <MobileReportCard
+                      key={`mobile-${row.invoiceReference}-${row.destinationAccountLabel}-${row.instructedAmount}`}
+                      title={row.invoiceReference}
+                      status={row.lifecycleState === "active" ? "فعال" : "لغوشده"}
+                      emphasis={`مانده قطعی: ${formatInvoiceAmount(row.confirmedRemaining)}`}
+                      action={{ label: "مشاهده فاکتور", onClick: () => openInvoiceRecord(row.invoiceId) }}
+                    >
+                      <span>گیرنده: {row.recipientName}</span>
+                      <span>حساب مقصد: {row.destinationAccountLabel}</span>
+                      <span>مبلغ دستور: {formatInvoiceAmount(row.instructedAmount)}</span>
+                    </MobileReportCard>
+                  ))}
+                </div>
+              </>
             ) : null}
           </section>
         )}

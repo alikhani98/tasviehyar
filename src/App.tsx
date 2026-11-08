@@ -27,6 +27,7 @@ function readSection(): Section {
 
 export function App() {
   const [currentSection, setCurrentSection] = useState(readSection);
+  const [visitedSections, setVisitedSections] = useState<Set<Section>>(() => new Set([readSection()]));
   const { theme, selectTheme } = useTheme();
   const pageTitle = useRef<HTMLHeadingElement>(null);
   const previousSection = useRef(currentSection);
@@ -37,6 +38,7 @@ export function App() {
       scrollPositions.current[currentSection] = window.scrollY;
       window.history.pushState(null, "", `#/${section}`);
     }
+    setVisitedSections((visited) => visited.has(section) ? visited : new Set(visited).add(section));
     setCurrentSection(section);
   }, [currentSection]);
 
@@ -66,6 +68,10 @@ export function App() {
       window.scrollTo({ top: scrollPositions.current[currentSection] ?? 0, behavior: "auto" });
       previousSection.current = currentSection;
     }
+  }, [currentSection]);
+
+  useEffect(() => {
+    setVisitedSections((visited) => visited.has(currentSection) ? visited : new Set(visited).add(currentSection));
   }, [currentSection]);
 
   const current = destinations[currentSection];
@@ -156,9 +162,9 @@ export function App() {
         <div className={`shell-section ${currentSection === "payments" ? "is-current" : ""}`}><PaymentManagement /></div>
         <div className={`shell-section ${currentSection === "parties" ? "is-current" : ""}`}><PartyManagement /></div>
         <Suspense fallback={<div className="loading-state" role="status">در حال آماده‌سازی بخش…</div>}>
-          {currentSection === "reconciliation" ? <SettlementReview /> : null}
-          {currentSection === "reports" ? <Reports /> : null}
-          {currentSection === "backup" ? <BackupRestore /> : null}
+          {visitedSections.has("reconciliation") ? <div className={`shell-section ${currentSection === "reconciliation" ? "is-current" : ""}`}><SettlementReview /></div> : null}
+          {visitedSections.has("reports") ? <div className={`shell-section ${currentSection === "reports" ? "is-current" : ""}`}><Reports /></div> : null}
+          {visitedSections.has("backup") ? <div className={`shell-section ${currentSection === "backup" ? "is-current" : ""}`}><BackupRestore /></div> : null}
         </Suspense>
 
         <div className="legacy-entry-compat" aria-label="دسترسی‌های سازگار">

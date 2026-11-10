@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteRule ^backup-v1\.json$ backup-v1.php [END,QSA]
+<Files "config.example.php">
+  Require all denied
+</Files>
+RedirectMatch 404 ^/api/backup-v1\.php$

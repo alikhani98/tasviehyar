@@ -51,6 +51,7 @@ export interface BackupRestoreResult {
   restoredRecordCounts: BackupRecordCounts;
   restoredAt: string;
   sourceFileName: string;
+  historyStatus: "recorded" | "failed";
 }
 
 export interface BackupInspectionResult {
@@ -73,10 +74,6 @@ const backupHistoryStorageKey = "tasviehyar.backup.history.v1";
 
 function defaultNow(): string {
   return new Date().toISOString();
-}
-
-function getStorage(storage?: Storage): Storage | null {
-  return storage ?? globalThis.localStorage ?? null;
 }
 
 function isErrorIssue(issue: BackupIntegrityIssue): boolean {
@@ -208,25 +205,19 @@ function buildFileNameAndHistory(envelope: BackupEnvelope, createdAt: string): B
 }
 
 function readDatabaseBundle(database: TasviehYarDatabase): Promise<BackupTableBundle> {
-  return Promise.all([
-    database.parties.toArray(),
-    database.destinationAccounts.toArray(),
-    database.invoices.toArray(),
-    database.paymentInstructions.toArray(),
-    database.payments.toArray(),
-    database.paymentAllocations.toArray(),
-    database.paymentVerifications.toArray(),
-    database.auditEvents.toArray()
-  ]).then(([parties, destinationAccounts, invoices, paymentInstructions, payments, paymentAllocations, paymentVerifications, auditEvents]) => ({
-    parties,
-    destinationAccounts,
-    invoices,
-    paymentInstructions,
-    payments,
-    paymentAllocations,
-    paymentVerifications,
-    auditEvents
-  }));
+  return database.transaction("r", database.tables, async () => {
+    const [parties, destinationAccounts, invoices, paymentInstructions, payments, paymentAllocations, paymentVerifications, auditEvents] = await Promise.all([
+      database.parties.toArray(),
+      database.destinationAccounts.toArray(),
+      database.invoices.toArray(),
+      database.paymentInstructions.toArray(),
+      database.payments.toArray(),
+      database.paymentAllocations.toArray(),
+      database.paymentVerifications.toArray(),
+      database.auditEvents.toArray()
+    ]);
+    return { parties, destinationAccounts, invoices, paymentInstructions, payments, paymentAllocations, paymentVerifications, auditEvents };
+  });
 }
 
 function mapBundleToData(bundle: BackupTableBundle): BackupData {
@@ -245,13 +236,13 @@ function mapBundleToData(bundle: BackupTableBundle): BackupData {
 export class BackupService {
   private readonly now: () => string;
 
-  private readonly storage: Storage | null;
+  private readonly storage: Storage | undefined;
 
   private readonly applicationVersion?: string;
 
   constructor(private readonly database: TasviehYarDatabase, deps: BackupServiceDependencies = {}) {
     this.now = deps.now ?? defaultNow;
-    this.storage = getStorage(deps.storage);
+    this.storage = deps.storage;
     this.applicationVersion = deps.applicationVersion ?? packageJson.version;
   }
 
@@ -260,7 +251,7 @@ export class BackupService {
     const createdAt = this.now();
     const { envelope, preview, checksum, text } = await this.buildExportArtifacts(mapBundleToData(bundle), createdAt);
 
-    appendHistoryEntry(this.storage, buildFileNameAndHistory(envelope, createdAt));
+    this.tryAppendHistory(buildFileNameAndHistory(envelope, createdAt));
 
     return {
       filename: createBackupFileName(createdAt),
@@ -408,6 +399,8 @@ export class BackupService {
     }
 
     const bundle = mapBundleToData(inspection.envelope);
+    const restoredAt = this.now();
+    const sourceFileName = createBackupFileName(inspection.envelope.createdAt);
 
     const transactionalDatabase = this.database as unknown as {
       transaction: (...args: unknown[]) => Promise<unknown>;
@@ -447,17 +440,11 @@ export class BackupService {
       }
     );
 
-    const restoredIssues = validateBackupIntegrity(bundle);
-    if (restoredIssues.some((issue) => issue.severity === "error")) {
-      throw new Error("فایل بازیابی‌شده پس از ذخیره هنوز ناسازگاری دارد.");
-    }
-
-    const restoredAt = this.now();
-    appendHistoryEntry(this.storage, {
+    const historyRecorded = this.tryAppendHistory({
       kind: "restore",
       createdAt: restoredAt,
       sourceBackupCreatedAt: inspection.envelope.createdAt,
-      fileName: createBackupFileName(inspection.envelope.createdAt),
+      fileName: sourceFileName,
       checksum: inspection.envelope.checksum.value,
       recordCounts: inspection.envelope.recordCounts
     });
@@ -466,12 +453,31 @@ export class BackupService {
       preview: inspection.preview,
       restoredRecordCounts: inspection.envelope.recordCounts,
       restoredAt,
-      sourceFileName: createBackupFileName(inspection.envelope.createdAt)
+      sourceFileName,
+      historyStatus: historyRecorded ? "recorded" : "failed"
     };
   }
 
+  private tryAppendHistory(entry: BackupHistoryEntry): boolean {
+    try {
+      const storage = this.storage ?? globalThis.localStorage;
+      if (!storage) {
+        return false;
+      }
+      appendHistoryEntry(storage, entry);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   getHistorySummary(): BackupHistorySummary {
-    const entries = historyFromStorage(this.storage);
+    let entries: BackupHistoryEntry[];
+    try {
+      entries = historyFromStorage(this.storage ?? globalThis.localStorage ?? null);
+    } catch {
+      entries = [];
+    }
     const lastBackup = [...entries].reverse().find((entry) => entry.kind === "backup") ?? null;
     const lastRestore = [...entries].reverse().find((entry) => entry.kind === "restore") ?? null;
 

@@ -182,7 +182,8 @@ describe("backup service", () => {
       auditEvents: 8
     });
 
-    await targetService.restoreBackupText(exported.text);
+    const restored = await targetService.restoreBackupText(exported.text);
+    expect(restored.historyStatus).toBe("recorded");
 
     expect(await targetDatabase.parties.count()).toBe(2);
     expect(await targetDatabase.destinationAccounts.count()).toBe(1);
@@ -203,6 +204,80 @@ describe("backup service", () => {
       expect((await createService(reopened).exportBackup()).text).toBe(exported.text);
     } finally {
       reopened.close();
+    }
+  });
+
+  it("exports a consistent snapshot when another connection writes between table reads", async () => {
+    const reader = createDatabase("snapshot-reader");
+    const writer = new TasviehYarDatabase(reader.name);
+    await seedRichDatabase(reader);
+    await writer.open();
+    const service = createService(reader);
+    const before = await service.exportBackup();
+    const [party] = await reader.parties.toArray();
+    const [invoice] = await reader.invoices.toArray();
+    const [auditEvent] = await reader.auditEvents.toArray();
+    const readParties = reader.parties.toArray.bind(reader.parties);
+    const readInvoices = reader.invoices.toArray.bind(reader.invoices);
+    let partiesRead: ReturnType<typeof readParties>;
+    let writeDone: Promise<void> | undefined;
+    const partiesSpy = vi.spyOn(reader.parties, "toArray").mockImplementationOnce(() => {
+      partiesRead = readParties();
+      return partiesRead;
+    });
+    const invoicesSpy = vi.spyOn(reader.invoices, "toArray").mockImplementationOnce(() =>
+      partiesRead.then(() => {
+        // Queue the native write synchronously before requesting the invoice read.
+        const tx = writer.backendDB().transaction(["parties", "invoices", "auditEvents"], "readwrite");
+        writeDone = new Promise<void>((resolve, reject) => {
+          tx.oncomplete = () => resolve();
+          tx.onabort = () => reject(tx.error ?? new Error("Writer aborted"));
+        });
+        tx.objectStore("parties").add({ ...party, id: "concurrent-party" });
+        tx.objectStore("invoices").add({ ...invoice, id: "concurrent-invoice", customerPartyId: "concurrent-party" });
+        tx.objectStore("auditEvents").add({ ...auditEvent, id: "concurrent-audit", entityType: "invoice", entityId: "concurrent-invoice" });
+        return readInvoices();
+      })
+    );
+    try {
+      const during = await service.exportBackup();
+      expect(writeDone).toBeDefined();
+      await writeDone;
+      expect(during.text).toBe(before.text);
+      const after = await service.exportBackup();
+      expect(after.preview.compatible).toBe(true);
+      expect(after.preview.recordCounts).toEqual({
+        ...before.preview.recordCounts,
+        parties: 3,
+        invoices: 2,
+        auditEvents: 9
+      });
+      expect(after.text).toContain("concurrent-invoice");
+    } finally {
+      partiesSpy.mockRestore();
+      invoicesSpy.mockRestore();
+      writer.close();
+    }
+  });
+
+  it.each(["getItem", "setItem"] as const)("commits all stores even if history storage %s throws", async (operation) => {
+    const source = createDatabase("history-source");
+    const target = createDatabase("history-target");
+    await seedRichDatabase(source);
+    await seedRichDatabase(target);
+    const incoming = await createService(source).exportBackup();
+    const storage = createMemoryStorage();
+    const write = vi.spyOn(storage, operation).mockImplementation(() => {
+      throw new DOMException("History storage unavailable", "QuotaExceededError");
+    });
+    const service = createService(target, storage);
+    try {
+      const restored = await service.restoreBackupText(incoming.text);
+      expect(restored.historyStatus).toBe("failed");
+      expect((await service.exportBackup()).text).toBe(incoming.text);
+      expect(service.getHistorySummary().lastRestore).toBeNull();
+    } finally {
+      write.mockRestore();
     }
   });
 

@@ -3,6 +3,7 @@ import { db } from "../../db/tasviehyar-db";
 import { type BackupHistorySummary, type BackupPreview } from "../../domain/backup";
 import { formatInvoiceTimestamp } from "../../domain/invoices";
 import { BackupService, type BackupExportResult, type BackupInspectionResult, type BackupRestoreResult } from "../../services/backup-service";
+import { decryptBackupText, encryptBackupText, generateRecoveryKey, parseRecoveryKey, type RecoveryKey } from "../../services/encrypted-backup-service";
 
 export interface BackupRestoreService {
   exportBackup(): Promise<BackupExportResult>;
@@ -78,8 +79,23 @@ export function BackupRestore({ service = defaultService }: BackupRestoreProps) 
   const [error, setError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [encryptedExportOpen, setEncryptedExportOpen] = useState(false);
+  const [recoveryKeyValue, setRecoveryKeyValue] = useState("");
+  const [recoveryKeyConfirmed, setRecoveryKeyConfirmed] = useState(false);
+  const [encryptedExporting, setEncryptedExporting] = useState(false);
+  const [encryptedNotice, setEncryptedNotice] = useState<string | null>(null);
+  const [encryptedError, setEncryptedError] = useState<string | null>(null);
+  const [encryptedInspectOpen, setEncryptedInspectOpen] = useState(false);
+  const [encryptedFileText, setEncryptedFileText] = useState<string | null>(null);
+  const [encryptedFileName, setEncryptedFileName] = useState<string | null>(null);
+  const [encryptedInspection, setEncryptedInspection] = useState<BackupPreview | null>(null);
+  const [encryptedDecryptedText, setEncryptedDecryptedText] = useState<string | null>(null);
+  const [encryptedInspecting, setEncryptedInspecting] = useState(false);
+  const [encryptedRestoring, setEncryptedRestoring] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const encryptedFileInputRef = useRef<HTMLInputElement | null>(null);
   const isMountedRef = useRef(true);
+  const encryptedOperationRef = useRef(0);
 
   const refreshHistory = useCallback(() => {
     if (!isMountedRef.current) {
@@ -104,8 +120,12 @@ export function BackupRestore({ service = defaultService }: BackupRestoreProps) 
   }, [service]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
+      setRecoveryKeyValue("");
+      setEncryptedFileText(null);
+      setEncryptedDecryptedText(null);
     };
   }, []);
 
@@ -213,20 +233,202 @@ export function BackupRestore({ service = defaultService }: BackupRestoreProps) 
     setNotice(null);
     setError(null);
 
+    let result: BackupRestoreResult;
     try {
-      const result: BackupRestoreResult = await service.restoreBackupText(selectedFileText);
-      setPreview(result.preview);
-      setNotice(
-        `بازیابی با موفقیت انجام شد. ${result.restoredRecordCounts.parties.toLocaleString("fa-IR")} طرف و ${result.restoredRecordCounts.invoices.toLocaleString("fa-IR")} فاکتور دوباره بارگذاری شد.`
-      );
-      setSelectedFileName(result.sourceFileName);
-      refreshHistory();
-      void refreshCurrentCounts();
-      window.dispatchEvent(new CustomEvent("tasviehyar-data-updated"));
+      result = await service.restoreBackupText(selectedFileText);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "بازیابی ناموفق بود.");
+      const detail = caught instanceof Error ? ` ${caught.message}` : "";
+      setError(`بازیابی پیش از ذخیره ناموفق بود.${detail}`);
+      return;
     } finally {
       setRestoring(false);
+    }
+
+    setPreview(result.preview);
+    setSelectedFileName(result.sourceFileName);
+    const success = `بازیابی با موفقیت انجام شد. ${result.restoredRecordCounts.parties.toLocaleString("fa-IR")} طرف و ${result.restoredRecordCounts.invoices.toLocaleString("fa-IR")} فاکتور دوباره بارگذاری شد.`;
+    setNotice(result.historyStatus === "failed" ? `${success} ثبت در تاریخچهٔ پشتیبان‌گیری ناموفق بود.` : success);
+    window.dispatchEvent(new CustomEvent("tasviehyar-data-updated"));
+    refreshHistory();
+    void refreshCurrentCounts();
+  }
+
+  function closeEncryptedExport() {
+    setEncryptedExportOpen(false);
+    setRecoveryKeyValue("");
+    setRecoveryKeyConfirmed(false);
+    setEncryptedNotice(null);
+    setEncryptedError(null);
+  }
+
+  function openEncryptedExport() {
+    setEncryptedExportOpen(true);
+    setRecoveryKeyValue("");
+    setRecoveryKeyConfirmed(false);
+    setEncryptedNotice(null);
+    setEncryptedError(null);
+  }
+
+  function handleGenerateRecoveryKey() {
+    const generated: RecoveryKey = generateRecoveryKey();
+    setRecoveryKeyValue(generated.value);
+    setRecoveryKeyConfirmed(false);
+    setEncryptedError(null);
+    setEncryptedNotice("کلید جدید ساخته شد. آن را جدا از فایل پشتیبان ذخیره کنید.");
+  }
+
+  function validRecoveryKey(value: string): boolean {
+    try {
+      parseRecoveryKey(value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function handleCopyRecoveryKey() {
+    if (!validRecoveryKey(recoveryKeyValue)) {
+      setEncryptedError("ابتدا یک کلید بازیابی معتبر تولید یا وارد کنید.");
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(recoveryKeyValue);
+      setEncryptedNotice("کلید بازیابی با اقدام صریح شما کپی شد.");
+    } catch {
+      setEncryptedError("کپی کلید بازیابی در این مرورگر در دسترس نیست. آن را به‌صورت دستی ذخیره کنید.");
+    }
+  }
+
+  function handleDownloadRecoveryKey() {
+    if (!validRecoveryKey(recoveryKeyValue)) {
+      setEncryptedError("ابتدا یک کلید بازیابی معتبر تولید یا وارد کنید.");
+      return;
+    }
+    const keyId = parseRecoveryKey(recoveryKeyValue).keyId;
+    downloadTextFile(`tasviehyar-recovery-key-${keyId}.txt`, `${recoveryKeyValue}\n`);
+    setEncryptedNotice("فایل کلید بازیابی دانلود شد. آن را جدا از پشتیبان رمزنگاری‌شده نگه دارید.");
+  }
+
+  async function handleEncryptedExport() {
+    if (!validRecoveryKey(recoveryKeyValue)) {
+      setEncryptedError("کلید بازیابی معتبر نیست.");
+      return;
+    }
+    if (!recoveryKeyConfirmed) {
+      setEncryptedError("برای ادامه تأیید کنید که کلید را مستقل و جدا از فایل پشتیبان ذخیره کرده‌اید.");
+      return;
+    }
+    setEncryptedExporting(true);
+    setEncryptedError(null);
+    setEncryptedNotice(null);
+    try {
+      const result = await service.exportBackup();
+      const encrypted = await encryptBackupText(result.text, recoveryKeyValue);
+      downloadTextFile(`tasviehyar-encrypted-backup-${new Date().toISOString().slice(0, 10)}.json`, encrypted);
+      setEncryptedNotice("پشتیبان رمزنگاری‌شده آماده و دانلود شد. کلید بازیابی را جداگانه نگه دارید.");
+    } catch {
+      setEncryptedError("تهیه پشتیبان رمزنگاری‌شده ناموفق بود. داده‌ای به سرور ارسال نشد.");
+    } finally {
+      setEncryptedExporting(false);
+    }
+  }
+
+  function closeEncryptedInspection() {
+    encryptedOperationRef.current += 1;
+    setEncryptedInspectOpen(false);
+    setRecoveryKeyValue("");
+    setEncryptedFileText(null);
+    setEncryptedFileName(null);
+    setEncryptedInspection(null);
+    setEncryptedDecryptedText(null);
+    setEncryptedNotice(null);
+    setEncryptedError(null);
+    if (encryptedFileInputRef.current) encryptedFileInputRef.current.value = "";
+  }
+
+  function openEncryptedInspection() {
+    encryptedOperationRef.current += 1;
+    setEncryptedInspectOpen(true);
+    setRecoveryKeyValue("");
+    setEncryptedFileText(null);
+    setEncryptedFileName(null);
+    setEncryptedInspection(null);
+    setEncryptedDecryptedText(null);
+    setEncryptedNotice(null);
+    setEncryptedError(null);
+  }
+
+  async function handleEncryptedFileSelection(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    encryptedOperationRef.current += 1;
+    setEncryptedFileName(file.name);
+    setEncryptedFileText(await readFileText(file));
+    setEncryptedInspection(null);
+    setEncryptedDecryptedText(null);
+    setEncryptedError(null);
+    setEncryptedNotice("فایل انتخاب شد. برای بررسی، کلید بازیابی را وارد کنید.");
+  }
+
+  async function handleEncryptedInspection() {
+    if (!encryptedFileText || !validRecoveryKey(recoveryKeyValue)) {
+      setEncryptedError("فایل و کلید بازیابی معتبر لازم است.");
+      return;
+    }
+    const operation = ++encryptedOperationRef.current;
+    setEncryptedInspecting(true);
+    setEncryptedError(null);
+    try {
+      const envelope = await decryptBackupText(encryptedFileText, recoveryKeyValue);
+      if (operation !== encryptedOperationRef.current || !isMountedRef.current) return;
+      setEncryptedInspection({
+        compatible: true,
+        appIdentifier: envelope.appIdentifier,
+        backupFormatVersion: envelope.backupFormatVersion,
+        databaseSchemaVersion: envelope.databaseSchemaVersion,
+        createdAt: envelope.createdAt,
+        checksum: envelope.checksum.value,
+        recordCounts: {
+          parties: envelope.parties.length,
+          destinationAccounts: envelope.destinationAccounts.length,
+          invoices: envelope.invoices.length,
+          paymentInstructions: envelope.paymentInstructions.length,
+          payments: envelope.payments.length,
+          paymentAllocations: envelope.paymentAllocations.length,
+          paymentVerifications: envelope.paymentVerifications.length,
+          auditEvents: envelope.auditEvents.length
+        },
+        issues: [],
+        ...(envelope.applicationVersion ? { applicationVersion: envelope.applicationVersion } : {})
+      });
+      setEncryptedDecryptedText(JSON.stringify(envelope));
+      setEncryptedNotice("فایل رمزگشایی و اعتبارسنجی شد؛ هیچ داده‌ای در IndexedDB نوشته نشد.");
+    } catch {
+      setEncryptedInspection(null);
+      setEncryptedError("فایل یا کلید بازیابی معتبر نیست؛ داده‌ای تغییر نکرد.");
+    } finally {
+      setEncryptedInspecting(false);
+    }
+  }
+
+  async function handleEncryptedRestore() {
+    if (!encryptedDecryptedText || encryptedRestoring) return;
+    if (!window.confirm("این کار همه داده‌های محلی فعلی را با نسخه پشتیبان رمزگشایی‌شده جایگزین می‌کند. قبل از ادامه، یک پشتیبان تازه از داده‌های فعلی دریافت کنید.")) return;
+    setEncryptedRestoring(true);
+    setEncryptedError(null);
+    setEncryptedNotice(null);
+    try {
+      const result = await service.restoreBackupText(encryptedDecryptedText);
+      const success = `بازیابی رمزنگاری‌شده با موفقیت انجام شد. ${result.restoredRecordCounts.parties.toLocaleString("fa-IR")} طرف و ${result.restoredRecordCounts.invoices.toLocaleString("fa-IR")} فاکتور دوباره بارگذاری شد.`;
+      setEncryptedNotice(result.historyStatus === "failed" ? `${success} ثبت در تاریخچهٔ پشتیبان‌گیری ناموفق بود.` : success);
+      window.dispatchEvent(new CustomEvent("tasviehyar-data-updated"));
+      refreshHistory();
+      void refreshCurrentCounts();
+    } catch (caught) {
+      const detail = caught instanceof Error ? ` ${caught.message}` : "";
+      setEncryptedError(`بازیابی رمزنگاری‌شده پیش از ذخیره ناموفق بود.${detail}`);
+    } finally {
+      setEncryptedRestoring(false);
     }
   }
 
@@ -281,6 +483,12 @@ export function BackupRestore({ service = defaultService }: BackupRestoreProps) 
         </button>
         <button type="button" className="secondary-button" onClick={() => fileInputRef.current?.click()} disabled={exporting || restoring}>
           بازیابی از فایل
+        </button>
+        <button type="button" className="secondary-button" onClick={openEncryptedExport} disabled={exporting || restoring}>
+          پشتیبان‌گیری رمزنگاری‌شده
+        </button>
+        <button type="button" className="secondary-button" onClick={openEncryptedInspection} disabled={exporting || restoring}>
+          بررسی پشتیبان رمزنگاری‌شده
         </button>
         <input
           ref={fileInputRef}
@@ -349,6 +557,46 @@ export function BackupRestore({ service = defaultService }: BackupRestoreProps) 
               تأیید بازیابی
             </button>
           </div>
+        </section>
+      ) : null}
+
+      {encryptedExportOpen ? (
+        <section className="summary-card" aria-label="پشتیبان‌گیری رمزنگاری‌شده">
+          <h3>پشتیبان‌گیری رمزنگاری‌شده</h3>
+          <p className="detail-copy">کلید بازیابی مستقل است. اگر آن را گم کنید، این پشتیبان قابل بازیابی نخواهد بود.</p>
+          {recoveryKeyValue ? <code dir="ltr" className="detail-copy" aria-label="کلید بازیابی">{recoveryKeyValue}</code> : null}
+          <div className="form-actions">
+            <button type="button" className="secondary-button" onClick={handleGenerateRecoveryKey}>تولید کلید بازیابی</button>
+            <button type="button" className="secondary-button" onClick={handleCopyRecoveryKey} disabled={!recoveryKeyValue}>کپی کلید بازیابی</button>
+            <button type="button" className="secondary-button" onClick={handleDownloadRecoveryKey} disabled={!recoveryKeyValue}>دانلود فایل کلید بازیابی</button>
+          </div>
+          <label className="detail-copy"><input type="checkbox" checked={recoveryKeyConfirmed} onChange={(event) => setRecoveryKeyConfirmed(event.target.checked)} /> کلید را خارج از برنامه و جدا از فایل پشتیبان ذخیره کرده‌ام.</label>
+          {encryptedError ? <div className="notice notice-error" role="alert">{encryptedError}</div> : null}
+          {encryptedNotice ? <div className="notice notice-success" role="status">{encryptedNotice}</div> : null}
+          <div className="form-actions">
+            <button type="button" className="primary-button" onClick={() => void handleEncryptedExport()} disabled={encryptedExporting || !recoveryKeyValue}>دریافت پشتیبان رمزنگاری‌شده</button>
+            <button type="button" className="secondary-button" onClick={closeEncryptedExport}>بستن</button>
+          </div>
+        </section>
+      ) : null}
+
+      {encryptedInspectOpen ? (
+        <section className="summary-card" aria-label="بررسی پشتیبان رمزنگاری‌شده">
+          <h3>بررسی پشتیبان رمزنگاری‌شده</h3>
+          <p className="detail-copy">این مرحله فقط فایل را بررسی می‌کند و هیچ تغییری در داده‌های محلی ایجاد نمی‌کند.</p>
+          <button type="button" className="secondary-button" onClick={() => encryptedFileInputRef.current?.click()}>انتخاب فایل رمزنگاری‌شده</button>
+          <input ref={encryptedFileInputRef} className="backup-file-input" type="file" accept=".json,application/json" onChange={(event) => void handleEncryptedFileSelection(event)} aria-label="انتخاب فایل رمزنگاری‌شده" />
+          {encryptedFileName ? <p className="detail-copy">فایل انتخاب‌شده: {encryptedFileName}</p> : null}
+          <label className="detail-copy" htmlFor="encrypted-recovery-key">کلید بازیابی فایل</label>
+          <input id="encrypted-recovery-key" dir="ltr" type="password" value={recoveryKeyValue} onChange={(event) => { encryptedOperationRef.current += 1; setRecoveryKeyValue(event.target.value); setEncryptedInspection(null); setEncryptedDecryptedText(null); }} autoComplete="off" />
+          {encryptedError ? <div className="notice notice-error" role="alert">{encryptedError}</div> : null}
+          {encryptedNotice ? <div className="notice notice-success" role="status">{encryptedNotice}</div> : null}
+          <div className="form-actions">
+            <button type="button" className="primary-button" onClick={() => void handleEncryptedInspection()} disabled={encryptedInspecting || encryptedRestoring || !encryptedFileText}>بررسی و رمزگشایی</button>
+            <button type="button" className="primary-button" onClick={() => void handleEncryptedRestore()} disabled={!encryptedDecryptedText || encryptedInspecting || encryptedRestoring}>تأیید بازیابی رمزنگاری‌شده</button>
+            <button type="button" className="secondary-button" onClick={closeEncryptedInspection}>بستن</button>
+          </div>
+          {encryptedInspection ? <div className="notice notice-success" role="status">اعتبارسنجی موفق است. نسخه قالب {encryptedInspection.backupFormatVersion}، شِمای {encryptedInspection.databaseSchemaVersion}، {formatCountsLine(encryptedInspection.recordCounts)}. این بررسی بدون نوشتن در IndexedDB انجام شد.</div> : null}
         </section>
       ) : null}
     </section>
